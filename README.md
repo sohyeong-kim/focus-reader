@@ -78,7 +78,27 @@ npm start
 
 1. **PDF 열기**: 앱에서 PDF 파일 선택
 2. **문단 클릭**: PDF에서 읽고싶은 문단 클릭
-3. **문장 이동**: 방향키 `←` `→` 또는 `↑` `↓`
+3. **문장 이동**: 방향키 \`←\` \`→\` 또는 \`↑\` \`↓\`
+
+---
+
+## 🔑 Claude API (선택사항)
+
+> ⚠️ **AI 챗 기능**을 사용하려면 Claude API 키가 필요해요!
+
+**API 키 발급:**
+1. https://console.anthropic.com 접속
+2. 회원가입 후 API Keys에서 키 생성
+3. 앱에서 **[🔑 API]** 버튼 클릭 → 키 입력
+
+**API 키 없이도 가능한 기능:**
+- ✅ PDF 열기 & 읽기
+- ✅ 문단 클릭 & 문장 이동
+- ✅ Bionic Reading & 색깔 하이라이트
+- ✅ 노트 작성
+
+**API 키 필요한 기능:**
+- 🔑 Claude AI 챗
 
 ---
 
@@ -96,10 +116,10 @@ xattr -cr /Applications/Focus\ Reader.app
 ### "pip3: command not found"
 → Python 설치: https://www.python.org/downloads/
 
-### PDF 파싱이 안 돼요
-→ Docker Desktop이 켜져있는지 확인 (고래 아이콘 🐳)
-→ Grobid 확인: `docker ps` 쳤을 때 grobid 보여야 함
-→ 안 보이면: `docker start grobid`
+### PDF 파싱이 안 돼요 / "Grobid 실패"
+→ Docker Desktop이 켜져있는지 확인 (고래 아이콘 ��)
+→ Grobid 확인: \`docker ps\` 쳤을 때 grobid 보여야 함
+→ 안 보이면: \`docker start grobid\`
 
 ---
 
@@ -109,6 +129,16 @@ xattr -cr /Applications/Focus\ Reader.app
 2. **Focus Reader 실행**
 
 > 💡 Grobid는 Docker 켜면 자동 실행돼요!
+
+---
+
+## 💾 데이터 저장
+
+| 항목 | 저장 위치 | 설명 |
+|------|----------|------|
+| API 키 | 앱 내 localStorage | 로컬에만 저장, 외부 전송 안 함 |
+| 노트 | 앱 내 저장소 | 논문별 메모 |
+| UI 상태 | localStorage | 패널 펼침/접힘 상태 |
 
 ---
 

@@ -20,7 +20,6 @@ function createWindow() {
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js')
     },
-    titleBarStyle: 'hiddenInset',
     backgroundColor: '#1e1e2e'
   });
 
@@ -44,8 +43,31 @@ function startPythonServer() {
 
   console.log('Starting Python server from:', serverPath);
 
-  serverProcess = spawn('python3', [serverPath], {
-    stdio: ['pipe', 'pipe', 'pipe']
+  // Try multiple python paths
+  const pythonPaths = [
+    '/opt/miniconda3/bin/python3',
+    '/opt/homebrew/bin/python3',
+    '/usr/local/bin/python3',
+    '/usr/bin/python3',
+    'python3'
+  ];
+
+  let pythonPath = 'python3';
+  for (const p of pythonPaths) {
+    try {
+      require('child_process').execSync(`${p} --version`, { stdio: 'ignore' });
+      pythonPath = p;
+      break;
+    } catch (e) {
+      // try next
+    }
+  }
+
+  console.log('Using Python:', pythonPath);
+
+  serverProcess = spawn(pythonPath, [serverPath], {
+    stdio: ['pipe', 'pipe', 'pipe'],
+    env: { ...process.env, PATH: '/opt/miniconda3/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:' + (process.env.PATH || '') }
   });
 
   serverProcess.stdout.on('data', (data) => {

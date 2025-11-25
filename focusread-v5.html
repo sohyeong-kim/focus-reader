@@ -49,12 +49,6 @@
             -webkit-app-region: drag;
         }
 
-        .window-controls { display: flex; gap: 8px; margin-right: 8px; }
-        .window-btn { width: 12px; height: 12px; border-radius: 50%; border: none; }
-        .window-btn.close { background: #ff5f57; }
-        .window-btn.minimize { background: #febc2e; }
-        .window-btn.maximize { background: #28c840; }
-
         .header-title {
             flex: 1;
             font-size: 13px;
@@ -1005,11 +999,6 @@
 
     <!-- Header -->
     <header class="header">
-        <div class="window-controls">
-            <div class="window-btn close"></div>
-            <div class="window-btn minimize"></div>
-            <div class="window-btn maximize"></div>
-        </div>
         <div class="header-title" id="header-title">FocusRead</div>
         <div class="header-actions">
             <button class="btn" id="back-btn" style="display:none" onclick="backToLibrary()">← 라이브러리</button>
@@ -3558,7 +3547,10 @@
             addChat('user', msg);
             input.value = '';
 
-            if (!apiKey) { addChat('assistant', 'API 키를 먼저 설정하세요.'); return; }
+            if (!apiKey) { 
+                addChat('assistant', '🔑 API 키가 필요해요!\n\n오른쪽 위 [🔑 API] 버튼을 눌러서 Claude API 키를 입력해주세요.\n\nAPI 키는 https://console.anthropic.com 에서 발급받을 수 있어요.'); 
+                return; 
+            }
 
             try {
                 const res = await fetch('https://api.anthropic.com/v1/messages', {

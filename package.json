@@ -63,7 +63,6 @@
     },
     "dmg": {
       "title": "Focus Reader",
-      "background": "assets/dmg-background.png",
       "contents": [
         {
           "x": 410,
