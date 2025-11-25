@@ -67,12 +67,19 @@
 
 1. **Start Grobid** (PDF parser):
    ```bash
-   docker run -d --name grobid -p 8070:8070 lfoppiano/grobid:0.8.0
+   # First time - download and run (takes a few minutes)
+   docker run -d --name grobid --restart=always -p 8070:8070 lfoppiano/grobid:0.8.0
    ```
+   
+   > 💡 **Docker Tips:**
+   > - `--restart=always` makes Grobid start automatically when your computer boots
+   > - Check if running: `docker ps`
+   > - If stopped, restart with: `docker start grobid`
+   > - Stop it: `docker stop grobid`
 
 2. **Clone and install**:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/focus-reader.git
+   git clone https://github.com/thgud1624/focus-reader.git
    cd focus-reader
    npm install
    ```
@@ -84,7 +91,7 @@
 
 ### Download Pre-built App
 
-> Coming soon! Check the [Releases](https://github.com/YOUR_USERNAME/focus-reader/releases) page.
+> Coming soon! Check the [Releases](https://github.com/thgud1624/focus-reader/releases) page.
 
 ---
 
