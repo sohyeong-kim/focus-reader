@@ -1,0 +1,3659 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusRead - ADHD Paper Reader</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Literata:ital,opsz,wght@0,7..72,300;0,7..72,400;0,7..72,500;1,7..72,400&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #faf9fc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f3f0f9;
+            --bg-hover: #ebe7f4;
+            --border-color: #e0dce8;
+            --text-primary: #2d2a33;
+            --text-secondary: #5c576a;
+            --text-muted: #9490a0;
+            --accent-blue: #7c6aef;
+            --accent-green: #10b981;
+            --accent-orange: #e87f35;
+            --accent-purple: #9f7aea;
+            --accent-red: #ef4444;
+            --accent-lavender: #a78bfa;
+            --paragraph-hover: rgba(124, 106, 239, 0.08);
+            --paragraph-selected: rgba(124, 106, 239, 0.15);
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            height: 48px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 12px;
+            -webkit-app-region: drag;
+        }
+
+        .window-controls { display: flex; gap: 8px; margin-right: 8px; }
+        .window-btn { width: 12px; height: 12px; border-radius: 50%; border: none; }
+        .window-btn.close { background: #ff5f57; }
+        .window-btn.minimize { background: #febc2e; }
+        .window-btn.maximize { background: #28c840; }
+
+        .header-title {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .header-actions { display: flex; gap: 8px; -webkit-app-region: no-drag; }
+
+        .btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 12px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.15s;
+        }
+        .btn:hover { background: var(--bg-hover); }
+        .btn-primary { background: var(--accent-blue); border-color: var(--accent-blue); }
+        .btn-primary:hover { background: #3a8eef; }
+        .translate-btn { font-size: 11px; padding: 4px 10px; }
+        .translate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .translate-btn.loading { background: var(--accent-orange); }
+
+        /* Library View */
+        .library-view { display: flex; height: calc(100vh - 48px); }
+        .library-view.hidden { display: none; }
+
+        .library-sidebar {
+            width: 200px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 12px 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-secondary);
+            transition: all 0.15s;
+        }
+        .sidebar-item:hover { background: var(--bg-hover); }
+        .sidebar-item.active { background: var(--paragraph-selected); color: var(--text-primary); }
+        .sidebar-item-count {
+            margin-left: auto;
+            font-size: 11px;
+            background: var(--bg-tertiary);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .sidebar-section-title {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 16px 16px 8px;
+        }
+
+        .folder-item { padding-left: 24px; }
+        .add-folder-btn {
+            margin: 8px 12px;
+            padding: 8px;
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 12px;
+            cursor: pointer;
+            width: calc(100% - 24px);
+        }
+        .add-folder-btn:hover { border-color: var(--accent-blue); color: var(--accent-blue); }
+
+        .library-main { flex: 1; display: flex; flex-direction: column; }
+
+        .library-toolbar {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .library-title { font-size: 18px; font-weight: 600; }
+        .library-search { flex: 1; max-width: 280px; margin-left: auto; }
+        .library-search input {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+        }
+        .library-search input:focus { outline: none; border-color: var(--accent-blue); }
+
+        .paper-list { flex: 1; overflow-y: auto; padding: 16px 24px; }
+
+        .paper-list-header {
+            display: grid;
+            grid-template-columns: 1fr 150px 120px 100px 50px;
+            gap: 12px;
+            padding: 8px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .paper-item {
+            display: grid;
+            grid-template-columns: 1fr 150px 120px 100px 50px;
+            gap: 12px;
+            padding: 14px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s;
+            align-items: center;
+        }
+        .paper-item:hover { background: var(--bg-hover); }
+        .paper-title { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .paper-authors { font-size: 12px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .paper-meta { font-size: 12px; color: var(--text-secondary); }
+        .paper-folder { font-size: 12px; color: var(--accent-orange); }
+        .paper-actions { opacity: 0; transition: opacity 0.15s; }
+        .paper-item:hover .paper-actions { opacity: 1; }
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .delete-btn:hover { background: var(--bg-tertiary); color: var(--accent-red); }
+
+        .empty-library {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+        }
+        .empty-library-icon { font-size: 48px; margin-bottom: 16px; }
+
+        /* Reader View */
+        .reader-view { display: none; height: calc(100vh - 48px); }
+        .reader-view.active { display: flex; }
+
+        .thumbnail-sidebar {
+            width: 130px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 12px 8px;
+            flex-shrink: 0;
+        }
+
+        .thumbnail-item {
+            position: relative;
+            margin-bottom: 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            background: #fff;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+        .thumbnail-item:hover { border-color: var(--accent-lavender); }
+        .thumbnail-item.active { border-color: var(--accent-blue); box-shadow: 0 0 0 2px rgba(124, 106, 239, 0.2); }
+        .thumbnail-item canvas { max-width: 100%; max-height: 100%; }
+        .thumbnail-number {
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-blue);
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .pdf-main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+        .pdf-toolbar {
+            height: 40px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .zoom-display {
+            font-size: 12px;
+            color: var(--text-secondary);
+            min-width: 50px;
+            text-align: center;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .pdf-container {
+            flex: 1;
+            overflow: auto;
+            background: #e8e4f0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .pdf-page {
+            position: relative;
+            background: #fff;
+            box-shadow: 0 2px 12px rgba(124, 106, 239, 0.15);
+            border-radius: 4px;
+        }
+        .pdf-page canvas { display: block; }
+
+        /* Text Layer - 정확한 위치 */
+        .textLayer {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            line-height: 1.0;
+            z-index: 2;
+            opacity: 1;
+        }
+        
+        .textLayer > span {
+            color: transparent;
+            position: absolute;
+            white-space: pre;
+            cursor: text;
+            transform-origin: 0% 0%;
+        }
+        
+        .textLayer ::selection {
+            background: rgba(124, 106, 239, 0.35);
+            color: transparent;
+        }
+        
+        .textLayer br {
+            display: none;
+        }
+
+        /* Paragraph Overlay - 시각적 표시 전용 */
+        .paragraph-layer {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .paragraph-block {
+            position: absolute;
+            border-radius: 2px;
+            transition: all 0.15s;
+            pointer-events: none;
+            border: 1px solid transparent;
+        }
+        .paragraph-block.selected {
+            background: var(--paragraph-selected);
+            border-color: var(--accent-blue);
+        }
+        
+        /* 문장 단위 하이라이트 */
+        .sentence-block {
+            position: absolute;
+            border-radius: 2px;
+            transition: all 0.15s;
+            pointer-events: none;
+            z-index: 5;
+        }
+        .sentence-block.active {
+            background: rgba(124, 106, 239, 0.35);
+            border: 2px solid var(--accent-blue);
+            box-shadow: 0 0 8px rgba(124, 106, 239, 0.5);
+        }
+        
+        .paragraph-block.is-heading {
+            border-left: 3px solid var(--accent-orange);
+        }
+        
+        /* 디버그 모드 */
+        .debug-mode .paragraph-layer {
+            z-index: 10;
+        }
+        .debug-mode .paragraph-block {
+            background: rgba(124, 106, 239, 0.12);
+            border: 1px solid rgba(124, 106, 239, 0.4);
+            pointer-events: auto;
+        }
+        .debug-mode .paragraph-block::after {
+            content: attr(data-debug);
+            position: absolute;
+            top: 0;
+            left: 0;
+            font-size: 9px;
+            background: var(--accent-blue);
+            color: white;
+            padding: 1px 4px;
+            border-radius: 2px;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        .debug-mode .paragraph-block.is-heading {
+            background: rgba(232, 127, 53, 0.12);
+            border-color: rgba(232, 127, 53, 0.4);
+        }
+        .debug-mode .paragraph-block.is-heading::after {
+            background: var(--accent-orange);
+        }
+
+        /* Right Panel */
+        .right-panel {
+            width: 400px;
+            min-width: 300px;
+            max-width: 800px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .resize-handle {
+            position: absolute;
+            left: -4px;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            cursor: ew-resize;
+            background: transparent;
+            z-index: 10;
+        }
+        .resize-handle:hover {
+            background: var(--accent-blue);
+            opacity: 0.3;
+        }
+        .resize-handle.dragging {
+            background: var(--accent-blue);
+            opacity: 0.5;
+        }
+
+        .panel-tabs {
+            display: flex;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .panel-tab {
+            flex: 1;
+            padding: 10px 16px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.15s;
+        }
+        .panel-tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-hover);
+        }
+        .panel-tab.active {
+            color: var(--accent-blue);
+            border-bottom-color: var(--accent-blue);
+        }
+
+        .tab-content {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+        .tab-content.active {
+            display: flex;
+        }
+
+        /* All Notes Tab */
+        .all-notes-header {
+            flex-shrink: 0;
+        }
+        .all-notes-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+        .note-card {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--accent-lavender);
+        }
+        .note-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        .note-card-section {
+            font-size: 11px;
+            color: var(--accent-orange);
+            font-weight: 600;
+        }
+        .note-card-page {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        .note-card-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .note-card-note {
+            font-size: 13px;
+            color: var(--text-primary);
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+        .note-card:hover {
+            background: var(--bg-hover);
+            cursor: pointer;
+        }
+
+        .section-header {
+            padding: 10px 16px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); }
+        .section-hint { font-size: 10px; color: var(--text-muted); }
+        .section-hint kbd {
+            background: var(--bg-primary);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .paragraph-section {
+            flex: 3;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            border-bottom: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        .paragraph-section .section-header {
+            flex-shrink: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+        .paragraph-section .section-header:hover {
+            background: var(--bg-hover);
+        }
+        .paragraph-section .section-content {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s ease;
+        }
+        .paragraph-section.collapsed {
+            flex: 0 0 auto !important;
+            min-height: auto;
+            height: auto !important;
+        }
+        .paragraph-section.collapsed .section-content {
+            display: none;
+        }
+        
+        .paragraph-header {
+            padding: 12px 16px;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .paragraph-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-orange);
+            margin-bottom: 4px;
+        }
+        .paragraph-page-info {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .paragraph-content {
+            flex: 1;
+            padding: 16px;
+            overflow-y: auto;
+            font-family: 'Literata', Georgia, serif;
+            font-size: 17px;
+            line-height: 2.2;
+            color: var(--text-primary);
+            word-spacing: 0.05em;
+            letter-spacing: 0.01em;
+        }
+        
+        /* Bionic Reading - bold first part of words */
+        .paragraph-content .bionic-bold {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .paragraph-content .bionic-light {
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+        
+        /* Semantic Chunks - colored highlights */
+        .semantic-chunk {
+            padding: 2px 4px;
+            border-radius: 4px;
+            margin: 0 1px;
+            display: inline;
+            line-height: 1.8;
+        }
+        .sentence.active .semantic-chunk {
+            box-shadow: none;
+        }
+        
+        /* Section Browser (Grobid mode) */
+        .section-browser {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        .section-browser-item {
+            margin-bottom: 12px;
+        }
+        .section-browser-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent-orange);
+            padding: 6px 8px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            margin-bottom: 4px;
+            cursor: pointer;
+        }
+        .section-browser-title:hover {
+            background: var(--bg-secondary);
+        }
+        .section-browser-paras {
+            padding-left: 8px;
+        }
+        .section-para-item {
+            font-size: 12px;
+            padding: 6px 8px;
+            margin: 2px 0;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            border-left: 2px solid transparent;
+        }
+        .section-para-item:hover {
+            background: var(--paragraph-hover);
+        }
+        .section-para-item.active {
+            background: rgba(124, 106, 239, 0.15);
+            border-left-color: var(--accent-blue);
+            color: var(--text-primary);
+        }
+        .section-para-item.is-heading {
+            font-weight: 600;
+            color: var(--accent-green);
+        }
+        .browser-toggle {
+            display: flex;
+            padding: 8px 16px;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+        .browser-toggle button {
+            flex: 1;
+            padding: 6px 8px;
+            font-size: 11px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+        .browser-toggle button.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+        .section-collapse {
+            display: inline-block;
+            width: 14px;
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        .sentence {
+            padding: 2px 4px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.12s;
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+        .sentence:hover:not(.active) { 
+            background: var(--paragraph-hover); 
+            opacity: 0.8;
+        }
+        .sentence.active {
+            background: transparent;
+            color: var(--text-primary);
+            opacity: 1;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 24px;
+        }
+        .empty-state-icon { font-size: 32px; margin-bottom: 12px; }
+
+        .notes-section {
+            flex: 1;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            border-bottom: 1px solid var(--border-color);
+            width: 100%;
+        }
+        .notes-section .section-header {
+            flex-shrink: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+        .notes-section .section-header:hover {
+            background: var(--bg-hover);
+        }
+        .notes-section .section-content {
+            flex: 1;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+        .notes-section.collapsed {
+            flex: 0 0 auto !important;
+            min-height: auto;
+            height: auto !important;
+        }
+        .notes-section.collapsed .section-content {
+            display: none;
+        }
+        .notes-textarea {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            background: var(--bg-primary);
+            border: none;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13px;
+            line-height: 1.5;
+            resize: none;
+        }
+        .notes-textarea:focus { outline: none; }
+        .notes-textarea::placeholder { color: var(--text-muted); }
+
+        /* 섹션 리사이즈 핸들 (노트/챗 사이) */
+        .section-resize-handle {
+            height: 6px;
+            background: var(--border-color);
+            cursor: ns-resize;
+            flex-shrink: 0;
+            transition: background 0.15s;
+            position: relative;
+        }
+        .section-resize-handle:hover,
+        .section-resize-handle.dragging {
+            background: var(--accent-blue);
+        }
+        .section-resize-handle::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 2px;
+            background: var(--text-muted);
+            border-radius: 1px;
+            opacity: 0.5;
+        }
+        .section-resize-handle:hover::after {
+            opacity: 1;
+            background: white;
+        }
+
+        .chat-section {
+            flex: 1;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            overflow: hidden;
+        }
+        .chat-section .section-header {
+            flex-shrink: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+        .chat-section .section-header:hover {
+            background: var(--bg-hover);
+        }
+        .chat-section .section-content {
+            flex: 1;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+        .chat-section.collapsed {
+            flex: 0 0 auto !important;
+            min-height: 0 !important;
+            height: auto !important;
+            max-height: none !important;
+        }
+        .chat-section.collapsed .section-content {
+            display: none !important;
+            height: 0 !important;
+            min-height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: hidden !important;
+        }
+        
+        .collapse-icon {
+            transition: transform 0.2s ease;
+            font-size: 10px;
+            margin-right: 6px;
+        }
+        .collapsed .collapse-icon {
+            transform: rotate(-90deg);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .chat-message {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .chat-message.user { align-self: flex-end; background: var(--accent-blue); color: #fff; }
+        .chat-message.assistant { align-self: flex-start; background: var(--bg-tertiary); color: var(--text-primary); }
+        .chat-input-area {
+            padding: 10px 12px;
+            background: var(--bg-tertiary);
+            display: flex;
+            gap: 8px;
+        }
+        .chat-input {
+            flex: 1;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-family: inherit;
+            resize: none;
+        }
+        .chat-input:focus { outline: none; border-color: var(--accent-blue); }
+        .chat-send {
+            background: var(--accent-blue);
+            border: none;
+            border-radius: 8px;
+            width: 36px;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(45, 42, 51, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px rgba(124, 106, 239, 0.15);
+        }
+        .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+        .modal-input {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+            margin-bottom: 16px;
+        }
+        .modal-input:focus { outline: none; border-color: var(--accent-blue); }
+        .modal-buttons { display: flex; gap: 8px; justify-content: flex-end; }
+
+        /* Drop Zone */
+        .drop-zone {
+            position: fixed;
+            inset: 0;
+            background: rgba(250, 249, 252, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+        }
+        .drop-zone.active { display: flex; }
+        .drop-zone-content {
+            text-align: center;
+            padding: 48px;
+            border: 3px dashed var(--accent-blue);
+            border-radius: 16px;
+            color: var(--text-primary);
+        }
+        .drop-zone-icon { font-size: 48px; margin-bottom: 16px; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-tertiary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        #file-input { display: none; }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <input type="file" id="file-input" accept=".pdf">
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="api-modal">
+        <div class="modal">
+            <div class="modal-title">🔑 Claude API Key</div>
+            <input type="password" class="modal-input" id="api-key-input" placeholder="sk-ant-api...">
+            <div class="modal-buttons">
+                <button class="btn" onclick="closeModal('api-modal')">취소</button>
+                <button class="btn btn-primary" onclick="saveApiKey()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="folder-modal">
+        <div class="modal">
+            <div class="modal-title">📁 새 폴더</div>
+            <input type="text" class="modal-input" id="folder-name-input" placeholder="폴더 이름">
+            <div class="modal-buttons">
+                <button class="btn" onclick="closeModal('folder-modal')">취소</button>
+                <button class="btn btn-primary" onclick="createFolder()">생성</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="drop-zone" id="drop-zone">
+        <div class="drop-zone-content">
+            <div class="drop-zone-icon">📄</div>
+            <div>PDF를 여기에 놓으세요</div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="window-controls">
+            <div class="window-btn close"></div>
+            <div class="window-btn minimize"></div>
+            <div class="window-btn maximize"></div>
+        </div>
+        <div class="header-title" id="header-title">FocusRead</div>
+        <div class="header-actions">
+            <button class="btn" id="back-btn" style="display:none" onclick="backToLibrary()">← 라이브러리</button>
+            <button class="btn" onclick="showModal('api-modal')">🔑 API</button>
+        </div>
+    </header>
+
+    <!-- Library View -->
+    <div class="library-view" id="library-view">
+        <div class="library-sidebar">
+            <div class="sidebar-section-title">라이브러리</div>
+            <div class="sidebar-item active" data-filter="all" onclick="setFilter('all')">
+                <span>📚</span> 전체 논문
+                <span class="sidebar-item-count" id="count-all">0</span>
+            </div>
+            <div class="sidebar-item" data-filter="recent" onclick="setFilter('recent')">
+                <span>🕐</span> 최근 읽은
+                <span class="sidebar-item-count" id="count-recent">0</span>
+            </div>
+
+            <div class="sidebar-section-title">폴더</div>
+            <div id="folder-list"></div>
+            <button class="add-folder-btn" onclick="showModal('folder-modal')">➕ 새 폴더</button>
+        </div>
+
+        <div class="library-main">
+            <div class="library-toolbar">
+                <h1 class="library-title" id="library-title">전체 논문</h1>
+                <div class="library-search">
+                    <input type="text" placeholder="검색..." id="search-input" oninput="renderPapers()">
+                </div>
+                <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
+                    ➕ 논문 추가
+                </button>
+            </div>
+            <div class="paper-list">
+                <div class="paper-list-header">
+                    <span>제목</span>
+                    <span>저자</span>
+                    <span>추가일</span>
+                    <span>폴더</span>
+                    <span></span>
+                </div>
+                <div id="paper-list-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reader View -->
+    <div class="reader-view" id="reader-view">
+        <div class="thumbnail-sidebar" id="thumbnail-sidebar"></div>
+
+        <div class="pdf-main">
+            <div class="pdf-toolbar">
+                <button class="btn" onclick="zoomOut()">−</button>
+                <span class="zoom-display" id="zoom-display">100%</span>
+                <button class="btn" onclick="zoomIn()">+</button>
+                <button class="btn" onclick="zoomFit()">맞춤</button>
+                <span id="parse-status" style="margin-left: 12px; font-size: 11px; padding: 4px 8px; border-radius: 4px; background: var(--bg-tertiary);"></span>
+                <button class="btn" id="debug-btn" onclick="toggleDebug()">🐛 Debug</button>
+            </div>
+            <div class="pdf-container" id="pdf-container"></div>
+        </div>
+
+        <div class="right-panel" id="right-panel">
+            <div class="resize-handle" id="resize-handle"></div>
+            <div class="panel-tabs">
+                <button class="panel-tab active" data-tab="reader" onclick="switchTab('reader')">📖 문단 리더</button>
+                <button class="panel-tab" data-tab="notes" onclick="switchTab('notes')">📋 전체 노트</button>
+            </div>
+
+            <!-- 문단 리더 탭 -->
+            <div class="tab-content active" id="tab-reader">
+                <div class="paragraph-section" id="paragraph-section">
+                    <div class="section-header" onclick="toggleSection('paragraph-section')">
+                        <span><span class="collapse-icon">▼</span><span class="section-title">📖 문단 리더</span></span>
+                        <span class="section-hint"><kbd>←</kbd><kbd>→</kbd> 문장 이동</span>
+                    </div>
+                    <div class="section-content">
+                        <!-- 브라우저/리더 토글 (Grobid 모드일 때만 표시) -->
+                        <div class="browser-toggle" id="browser-toggle" style="display:none;">
+                            <button id="btn-browser" class="active" onclick="showBrowser()">📑 섹션</button>
+                            <button id="btn-reader" onclick="showReader()">📖 리더</button>
+                        </div>
+                        <div class="paragraph-header" id="paragraph-header" style="display:none">
+                            <div class="paragraph-section-title" id="current-section-title"></div>
+                            <div class="paragraph-page-info" id="current-page-info"></div>
+                        </div>
+                        <!-- 섹션 브라우저 (Grobid 모드용) -->
+                        <div class="section-browser" id="section-browser" style="display:none;"></div>
+                        <!-- 문단 콘텐츠 (문장별 표시) -->
+                        <div class="paragraph-content" id="paragraph-content">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">👆</div>
+                                <div>PDF에서 문단을 클릭하세요</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 문단/노트 섹션 사이 리사이즈 핸들 -->
+                <div class="section-resize-handle" data-above="paragraph-section" data-below="notes-section"></div>
+
+                <div class="notes-section" id="notes-section">
+                    <div class="section-header" onclick="toggleSection('notes-section')">
+                        <span><span class="collapse-icon">▼</span><span class="section-title">📝 노트</span></span>
+                        <button class="btn translate-btn" id="translate-btn" onclick="event.stopPropagation(); translateParagraph()">🤓 번역하기</button>
+                    </div>
+                    <div class="section-content">
+                        <textarea class="notes-textarea" id="notes-textarea" placeholder="메모 작성... (자동 저장)"></textarea>
+                    </div>
+                </div>
+
+                <!-- 노트/챗 섹션 사이 리사이즈 핸들 -->
+                <div class="section-resize-handle" data-above="notes-section" data-below="chat-section"></div>
+
+                <div class="chat-section" id="chat-section">
+                    <div class="section-header" onclick="toggleSection('chat-section')">
+                        <span><span class="collapse-icon">▼</span><span class="section-title">🤖 Claude</span></span>
+                    </div>
+                    <div class="section-content">
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="chat-message assistant">논문에 대해 질문해 주세요.</div>
+                        </div>
+                        <div class="chat-input-area">
+                            <textarea class="chat-input" id="chat-input" placeholder="질문..." rows="1"></textarea>
+                            <button class="chat-send" onclick="sendChat()">↑</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 전체 노트 탭 -->
+            <div class="tab-content" id="tab-notes">
+                <div class="all-notes-header">
+                    <div class="section-header">
+                        <span class="section-title">📋 전체 노트</span>
+                        <button class="btn" onclick="exportNotes()">📤 내보내기</button>
+                    </div>
+                </div>
+                <div class="all-notes-content" id="all-notes-content">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <div>아직 작성된 노트가 없습니다</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // ========== PaperDocument Class ==========
+        class PaperDocument {
+            constructor(id) {
+                this.id = id;
+                this.title = '';
+                this.authors = '';
+                this.fileName = '';
+                this.fileSize = 0;
+                this.folderId = null;
+                this.addedAt = new Date().toISOString();
+                this.lastRead = null;
+                this.sections = []; // { title, paragraphs: [{ id, text, pageNum, bounds, isHeading }] }
+                this.notes = {}; // paragraphId -> note text
+                this.serverParsed = false; // PyMuPDF 서버로 파싱했는지 여부
+            }
+
+            // PDF에서 구조 추출 - 기본 정보만
+            async extractBasicInfo(pdfDoc) {
+                const meta = await pdfDoc.getMetadata();
+                if (meta.info?.Title) {
+                    this.title = meta.info.Title;
+                }
+                if (meta.info?.Author) {
+                    this.authors = meta.info.Author;
+                }
+                return this;
+            }
+
+            // Grobid 서버를 통해 PDF 구조 추출 (캐시 지원)
+            async extractFromServer(pdfArrayBuffer, useCache = true) {
+                const statusEl = document.getElementById('parse-status');
+                
+                // 캐시 확인
+                if (useCache) {
+                    try {
+                        const cached = await dbGet('grobidCache', this.id);
+                        if (cached && cached.sections && cached.sections.length > 0) {
+                            console.log('✅ Using cached Grobid data');
+                            if (statusEl) statusEl.textContent = '✅ 캐시 사용';
+                            
+                            this.title = cached.title || this.title;
+                            this.authors = cached.authors || this.authors;
+                            this.sections = cached.sections;
+                            this.serverParsed = true;
+                            this.parseMethod = 'grobid-cached';
+                            
+                            const totalParas = this.sections.reduce((sum, s) => sum + s.paragraphs.length, 0);
+                            if (statusEl) {
+                                statusEl.textContent = `✅ 캐시: ${this.sections.length}섹션, ${totalParas}문단`;
+                                statusEl.style.color = 'var(--accent-green)';
+                            }
+                            return true;
+                        }
+                    } catch (e) {
+                        console.warn('Cache check failed:', e);
+                    }
+                }
+                
+                try {
+                    console.log('🔄 Trying Grobid server parsing...');
+                    if (statusEl) statusEl.textContent = '🔄 Grobid 파싱 중...';
+                    
+                    // pdfArrayBuffer가 Array일 수 있으므로 Uint8Array로 변환
+                    const uint8Data = pdfArrayBuffer instanceof Uint8Array 
+                        ? pdfArrayBuffer 
+                        : new Uint8Array(pdfArrayBuffer);
+                    const blob = new Blob([uint8Data], { type: 'application/pdf' });
+                    console.log('📤 Sending PDF to Grobid, size:', blob.size, 'bytes');
+                    
+                    const formData = new FormData();
+                    formData.append('file', blob, this.fileName || 'document.pdf');
+                    
+                    const response = await fetch('http://localhost:8000/process', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('📦 Grobid response:', data);
+                    console.log('📦 Title:', data.title);
+                    console.log('📦 Authors:', data.authors);
+                    console.log('📦 Sections:', data.sections?.length || 0);
+                    
+                    // 제목 설정
+                    if (data.title) {
+                        this.title = data.title;
+                        console.log('✅ Title set to:', this.title);
+                    }
+                    
+                    // 저자 설정
+                    if (data.authors && data.authors.length > 0) {
+                        this.authors = data.authors.join(', ');
+                        console.log('✅ Authors set to:', this.authors);
+                    }
+                    
+                    // 새 서버 응답에서 섹션과 문단 구성 (좌표 포함)
+                    this.sections = [];
+                    
+                    // 서버가 직접 paragraphs 배열 반환 (좌표 포함, bboxes 배열 지원)
+                    if (data.paragraphs && data.paragraphs.length > 0) {
+                        // 타입별로 그룹화하여 섹션 구성
+                        let currentSection = { title: 'Abstract', paragraphs: [] };
+                        
+                        for (const para of data.paragraphs) {
+                            if (para.type === 'section_title') {
+                                // 현재 섹션 저장 (비어있지 않으면)
+                                if (currentSection.paragraphs.length > 0) {
+                                    this.sections.push(currentSection);
+                                }
+                                // 새 섹션 시작
+                                currentSection = {
+                                    title: para.text,
+                                    paragraphs: []
+                                };
+                            } else {
+                                // 일반 문단 - bboxes 배열로 다중 페이지 지원
+                                const bboxes = para.bboxes || [];
+                                currentSection.paragraphs.push({
+                                    id: `p_${para.id}`,
+                                    text: para.text,
+                                    // 다중 페이지를 위한 bboxes 배열
+                                    bboxes: bboxes.map(bb => ({
+                                        pageNum: bb.page,
+                                        x: bb.x,
+                                        y: bb.y,
+                                        w: bb.width,
+                                        h: bb.height
+                                    })),
+                                    // 첫 페이지 정보 (호환성)
+                                    pageNum: bboxes[0]?.page || 1,
+                                    bounds: bboxes[0] ? {
+                                        x: bboxes[0].x,
+                                        y: bboxes[0].y,
+                                        w: bboxes[0].width,
+                                        h: bboxes[0].height
+                                    } : null,
+                                    isHeading: para.type === 'section_title'
+                                });
+                            }
+                        }
+                        
+                        // 마지막 섹션 저장
+                        if (currentSection.paragraphs.length > 0) {
+                            this.sections.push(currentSection);
+                        }
+                    }
+                    // 기존 구조도 지원 (하위 호환)
+                    else if (data.parsed && data.parsed.sections) {
+                        for (const section of data.parsed.sections) {
+                            const sectionData = {
+                                title: section.title || 'Section',
+                                paragraphs: []
+                            };
+                            
+                            for (const para of (section.paragraphs || [])) {
+                                // 서버가 페이지별 bbox 제공
+                                const firstPage = Object.keys(para.bbox || {})[0];
+                                const bbox = firstPage ? para.bbox[firstPage] : null;
+                                
+                                sectionData.paragraphs.push({
+                                    id: `p_${sectionData.paragraphs.length}`,
+                                    text: para.text,
+                                    pageNum: firstPage ? parseInt(firstPage) : 1,
+                                    bounds: bbox ? {
+                                        x: bbox.x,
+                                        y: bbox.y,
+                                        w: bbox.width,
+                                        h: bbox.height
+                                    } : null,
+                                    isHeading: false
+                                });
+                            }
+                            
+                            if (sectionData.paragraphs.length > 0) {
+                                this.sections.push(sectionData);
+                            }
+                        }
+                    }
+                    
+                    this.serverParsed = true;
+                    this.parseMethod = 'grobid'; // 파싱 방법 저장
+                    const totalParas = this.sections.reduce((sum, s) => sum + s.paragraphs.length, 0);
+                    console.log(`✅ Grobid parsed: ${this.sections.length} sections, ${totalParas} paragraphs`);
+                    
+                    // 섹션 목록 출력
+                    this.sections.forEach(s => {
+                        console.log(`   [${s.title}] ${s.paragraphs.length} paragraphs`);
+                    });
+                    
+                    // 캐시에 저장 (bounds는 없는 상태로 저장, 나중에 매칭 후 업데이트)
+                    try {
+                        await dbPut('grobidCache', {
+                            id: this.id,
+                            title: this.title,
+                            authors: this.authors,
+                            sections: this.sections,
+                            parsedAt: new Date().toISOString()
+                        });
+                        console.log('💾 Grobid result cached');
+                    } catch (e) {
+                        console.warn('Cache save failed:', e);
+                    }
+                    
+                    if (statusEl) {
+                        statusEl.textContent = `✅ Grobid: ${this.sections.length}섹션, ${totalParas}문단`;
+                        statusEl.style.color = 'var(--accent-green)';
+                    }
+                    
+                    return true;
+                } catch (error) {
+                    console.warn('⚠️ Grobid parsing failed:', error);
+                    if (statusEl) {
+                        statusEl.textContent = '⚠️ Grobid 실패 → DOM 파싱';
+                        statusEl.style.color = 'var(--accent-orange)';
+                    }
+                    return false;
+                }
+            }
+
+            // 실제 렌더링 후 DOM 기반으로 문단 추출 (2-column 지원) - 폴백용
+            extractParagraphsFromDOM(pageNum, textLayerDiv, scale) {
+                // 서버에서 이미 파싱했으면 스킵
+                if (this.serverParsed) return;
+                
+                const spans = textLayerDiv.querySelectorAll('span');
+                if (spans.length === 0) return;
+
+                const parentRect = textLayerDiv.getBoundingClientRect();
+                const pageWidth = parentRect.width;
+                const pageHeight = parentRect.height;
+                
+                // 모든 span 정보 수집
+                const spanInfos = [];
+                spans.forEach(span => {
+                    const text = span.textContent;
+                    if (!text || !text.trim()) return;
+                    
+                    const rect = span.getBoundingClientRect();
+                    const top = rect.top - parentRect.top;
+                    const left = rect.left - parentRect.left;
+                    const bottom = rect.bottom - parentRect.top;
+                    const right = rect.right - parentRect.left;
+                    const fontSize = parseFloat(window.getComputedStyle(span).fontSize);
+                    const centerX = (left + right) / 2;
+                    
+                    spanInfos.push({ text, left, top, right, bottom, fontSize, centerX });
+                });
+                
+                if (spanInfos.length === 0) return;
+                
+                // 먼저 줄(line) 단위로 그룹핑
+                const lines = [];
+                let currentLine = { spans: [], top: null, bottom: null };
+                
+                // Y 좌표로 정렬 후 X 좌표로 정렬
+                spanInfos.sort((a, b) => a.top - b.top || a.left - b.left);
+                
+                spanInfos.forEach(span => {
+                    // 같은 줄인지 판단: Y 좌표가 비슷하면 같은 줄
+                    if (currentLine.spans.length === 0) {
+                        currentLine = { spans: [span], top: span.top, bottom: span.bottom };
+                    } else {
+                        const lineMiddle = (currentLine.top + currentLine.bottom) / 2;
+                        const spanMiddle = (span.top + span.bottom) / 2;
+                        const lineHeight = currentLine.bottom - currentLine.top;
+                        
+                        // Y 중심점이 lineHeight의 50% 이내면 같은 줄
+                        if (Math.abs(spanMiddle - lineMiddle) < lineHeight * 0.5) {
+                            currentLine.spans.push(span);
+                            currentLine.bottom = Math.max(currentLine.bottom, span.bottom);
+                            currentLine.top = Math.min(currentLine.top, span.top);
+                        } else {
+                            // 새 줄 시작
+                            if (currentLine.spans.length > 0) {
+                                // 줄 내에서 X 좌표로 정렬
+                                currentLine.spans.sort((a, b) => a.left - b.left);
+                                lines.push(currentLine);
+                            }
+                            currentLine = { spans: [span], top: span.top, bottom: span.bottom };
+                        }
+                    }
+                });
+                
+                // 마지막 줄 추가
+                if (currentLine.spans.length > 0) {
+                    currentLine.spans.sort((a, b) => a.left - b.left);
+                    lines.push(currentLine);
+                }
+                
+                // 각 줄의 속성 계산
+                lines.forEach(line => {
+                    line.left = Math.min(...line.spans.map(s => s.left));
+                    line.right = Math.max(...line.spans.map(s => s.right));
+                    line.width = line.right - line.left;
+                    line.centerX = (line.left + line.right) / 2;
+                    line.text = line.spans.map(s => s.text).join(' ');
+                    line.avgFontSize = line.spans.reduce((sum, s) => sum + s.fontSize, 0) / line.spans.length;
+                });
+                
+                // 2-column 감지: 줄들의 X 분포 분석
+                const midPoint = pageWidth / 2;
+                const leftLines = lines.filter(l => l.centerX < midPoint * 0.9 && l.right < midPoint * 1.1);
+                const rightLines = lines.filter(l => l.centerX > midPoint * 1.1 && l.left > midPoint * 0.9);
+                const fullWidthLines = lines.filter(l => l.width > pageWidth * 0.6 || (l.left < midPoint * 0.5 && l.right > midPoint * 1.5));
+                
+                const is2Column = leftLines.length > 5 && rightLines.length > 5;
+                
+                console.log(`Page ${pageNum}: ${is2Column ? '2-column' : 'single-column'} (left: ${leftLines.length}, right: ${rightLines.length}, full: ${fullWidthLines.length})`);
+                
+                let paragraphIndex = this.sections.reduce((sum, s) => sum + s.paragraphs.length, 0);
+                
+                // 현재 섹션 찾기 또는 생성
+                let currentSection = this.sections.length > 0 
+                    ? this.sections[this.sections.length - 1] 
+                    : { title: 'Document', paragraphs: [] };
+                
+                if (this.sections.length === 0) {
+                    this.sections.push(currentSection);
+                }
+                
+                // 줄을 문단으로 그룹핑하는 함수
+                // columnType: 'fullwidth' | 'left' | 'right'
+                const groupLinesToParagraphs = (columnLines, columnType = 'body') => {
+                    if (columnLines.length === 0) return [];
+                    
+                    // Y 좌표로 정렬
+                    columnLines.sort((a, b) => a.top - b.top);
+                    
+                    const paragraphs = [];
+                    let currentPara = { lines: [], text: '' };
+                    let lastLine = null;
+                    
+                    // 컬럼 내 일반적인 줄 간격 계산 (median)
+                    const lineGaps = [];
+                    for (let i = 1; i < columnLines.length; i++) {
+                        const gap = columnLines[i].top - columnLines[i-1].bottom;
+                        if (gap > 0 && gap < 50) lineGaps.push(gap);
+                    }
+                    lineGaps.sort((a, b) => a - b);
+                    const medianGap = lineGaps.length > 0 ? lineGaps[Math.floor(lineGaps.length / 2)] : 10;
+                    
+                    // 일반적인 줄 너비 계산 (상위 80%)
+                    const lineWidths = columnLines.map(l => l.width).sort((a, b) => b - a);
+                    const typicalWidth = lineWidths[Math.floor(lineWidths.length * 0.2)] || lineWidths[0];
+                    
+                    // 일반 줄 높이 계산
+                    const lineHeights = columnLines.map(l => l.bottom - l.top).sort((a, b) => a - b);
+                    const typicalLineHeight = lineHeights[Math.floor(lineHeights.length * 0.5)] || 12;
+                    
+                    // 평균 폰트 크기 계산 (본문 기준)
+                    const fontSizes = columnLines.map(l => l.avgFontSize).sort((a, b) => a - b);
+                    const bodyFontSize = fontSizes[Math.floor(fontSizes.length * 0.5)] || 12;
+                    
+                    columnLines.forEach(line => {
+                        // 필터링: 무시할 줄
+                        const text = line.text.trim();
+                        const lineWidth = line.right - line.left;
+                        const lineHeight = line.bottom - line.top;
+                        
+                        // 0. 세로/회전된 텍스트 무시 (높이가 너비의 1.5배 이상)
+                        if (lineHeight > lineWidth * 1.5 && text.length < 30) return;
+                        
+                        // 0-1. 페이지 가장자리의 세로 텍스트 (arxiv 로고 등)
+                        if (line.left < pageWidth * 0.03 || line.right > pageWidth * 0.97) {
+                            // 가장자리에 있는 짧은 텍스트 무시
+                            if (text.length < 20) return;
+                        }
+                        
+                        // 1. 너무 짧은 텍스트 (라벨, 숫자 등)
+                        if (text.length < 5) return;
+                        
+                        // 2. 숫자/기호만 있는 줄 (차트 축, 번호 등)
+                        if (/^[\d\.\,\-\+\%\s\(\)]+$/.test(text)) return;
+                        
+                        // 3. Figure/Table 캡션
+                        if (/^(figure|fig\.?|table|tab\.?|algorithm)\s*[\d:]/i.test(text)) return;
+                        
+                        // 4. 페이지 번호 (페이지 상단/하단의 짧은 숫자)
+                        if (text.length < 10 && /^\d+$/.test(text.trim()) && 
+                            (line.top < pageHeight * 0.05 || line.top > pageHeight * 0.95)) return;
+                        
+                        // 5. 각주/미주 번호
+                        if (/^[\*†‡§¶\d]+$/.test(text) && text.length < 5) return;
+                        
+                        // 새 문단 시작 조건
+                        let isNewParagraph = false;
+                        let reason = '';
+                        
+                        if (lastLine) {
+                            const verticalGap = line.top - lastLine.bottom;
+                            const avgLineHeight = (lastLine.bottom - lastLine.top + line.bottom - line.top) / 2;
+                            const fontSizeDiff = Math.abs(line.avgFontSize - lastLine.avgFontSize);
+                            
+                            // 정렬 분석
+                            const lastLineCenterOffset = Math.abs((lastLine.left + lastLine.right) / 2 - pageWidth / 2);
+                            const lineCenterOffset = Math.abs((line.left + line.right) / 2 - pageWidth / 2);
+                            const lastLineIsCentered = lastLineCenterOffset < pageWidth * 0.12;
+                            const lineIsCentered = lineCenterOffset < pageWidth * 0.12;
+                            
+                            // ===== FULL-WIDTH 영역 (제목, Abstract 등) =====
+                            if (columnType === 'fullwidth') {
+                                // 중앙정렬된 요소들 (제목, 저자)
+                                if (lastLineIsCentered && lineIsCentered) {
+                                    if (fontSizeDiff > 1) {
+                                        isNewParagraph = true;
+                                        reason = 'fullwidth: font size change';
+                                    }
+                                    if (verticalGap > avgLineHeight * 1.5) {
+                                        isNewParagraph = true;
+                                        reason = 'fullwidth: large gap between centered';
+                                    }
+                                }
+                                
+                                // 정렬 변화 (중앙 -> 좌측, 좌측 -> 중앙)
+                                if (lastLineIsCentered !== lineIsCentered) {
+                                    isNewParagraph = true;
+                                    reason = 'fullwidth: alignment change';
+                                }
+                                
+                                // 좌측정렬 요소들 (Abstract 본문)
+                                if (!lastLineIsCentered && !lineIsCentered) {
+                                    // 큰 간격이면 분리
+                                    if (verticalGap > avgLineHeight * 1.5) {
+                                        isNewParagraph = true;
+                                        reason = 'fullwidth: large gap in left-aligned';
+                                    }
+                                    // 폰트 크기 변화
+                                    if (fontSizeDiff > 1.5) {
+                                        isNewParagraph = true;
+                                        reason = 'fullwidth: font change in left-aligned';
+                                    }
+                                    // "Abstract" 또는 섹션 키워드로 시작
+                                    if (/^(abstract|introduction|1\.?\s)/i.test(text)) {
+                                        isNewParagraph = true;
+                                        reason = 'fullwidth: section keyword';
+                                    }
+                                }
+                                
+                                // 이전 줄이 짧게 끝남 (문단 끝)
+                                if (lastLine.width < typicalWidth * 0.7 && verticalGap > medianGap) {
+                                    isNewParagraph = true;
+                                    reason = 'fullwidth: short line end';
+                                }
+                            }
+                            // ===== 제목/저자 영역 (페이지 상단 25%, 2-column에서) =====
+                            else if (line.top < pageHeight * 0.25) {
+                                // 중앙정렬된 요소들: 간격이나 폰트 변화로 분리
+                                if (lastLineIsCentered && lineIsCentered) {
+                                    // 폰트 크기가 다르면 분리 (제목 vs 저자)
+                                    if (fontSizeDiff > 1) {
+                                        isNewParagraph = true;
+                                        reason = 'title area: font size change';
+                                    }
+                                    // 간격이 줄 높이의 1.5배 이상이면 분리
+                                    if (verticalGap > avgLineHeight * 1.5) {
+                                        isNewParagraph = true;
+                                        reason = 'title area: large gap';
+                                    }
+                                }
+                                // 중앙정렬 -> 좌측정렬 (Abstract 시작)
+                                if (lastLineIsCentered && !lineIsCentered) {
+                                    isNewParagraph = true;
+                                    reason = 'centered -> left aligned';
+                                }
+                            }
+                            // ===== 본문 영역 (2-column 컬럼들) =====
+                            else {
+                                // 본문에서는 더 보수적으로 분리
+                                
+                                // 조건 1: 매우 큰 간격 (줄 높이의 1.8배 이상)
+                                if (verticalGap > avgLineHeight * 1.8) {
+                                    isNewParagraph = true;
+                                    reason = 'body: very large gap';
+                                }
+                                // 조건 1-2: 일반 간격의 2.5배 이상
+                                else if (verticalGap > medianGap * 2.5) {
+                                    isNewParagraph = true;
+                                    reason = 'body: gap > 2.5x median';
+                                }
+                                
+                                // 조건 2: 이전 줄이 짧게 끝남 (문단 끝) + 적당한 간격
+                                // 단, 이전 줄이 일반 너비의 60% 미만이고, 간격도 있어야 함
+                                if (lastLine.width < typicalWidth * 0.6 && 
+                                    verticalGap > medianGap * 1.5 &&
+                                    line.left <= lastLine.left + 5) {  // 다음 줄이 왼쪽 정렬
+                                    isNewParagraph = true;
+                                    reason = 'body: short line end + gap';
+                                }
+                                
+                                // 조건 3: 명확한 들여쓰기 (25px 이상) + 간격
+                                const indentDiff = line.left - lastLine.left;
+                                if (indentDiff > 25 && 
+                                    lastLine.width > typicalWidth * 0.9 &&
+                                    verticalGap > medianGap) {
+                                    isNewParagraph = true;
+                                    reason = 'body: clear indent';
+                                }
+                                
+                                // 조건 4: 폰트 크기 크게 변화 (섹션 제목)
+                                if (fontSizeDiff > 2) {
+                                    isNewParagraph = true;
+                                    reason = 'body: font size change (heading)';
+                                }
+                            }
+                        }
+                        
+                        if (isNewParagraph) {
+                            console.log(`New para: "${text.substring(0,30)}..." reason: ${reason}`);
+                        }
+                        
+                        if (isNewParagraph && currentPara.lines.length > 0) {
+                            // 현재 문단 저장
+                            const para = finalizeParagraph(currentPara);
+                            if (para) paragraphs.push(para);
+                            currentPara = { lines: [], text: '' };
+                        }
+                        
+                        currentPara.lines.push(line);
+                        currentPara.text += (currentPara.text ? ' ' : '') + text;
+                        lastLine = line;
+                    });
+                    
+                    // 마지막 문단
+                    if (currentPara.lines.length > 0) {
+                        const para = finalizeParagraph(currentPara);
+                        if (para) paragraphs.push(para);
+                    }
+                    
+                    return paragraphs;
+                };
+                
+                // 문단 최종 처리
+                const finalizeParagraph = (para) => {
+                    const text = para.text.trim();
+                    
+                    // 최소 길이 체크
+                    if (text.length < 20) return null;
+                    
+                    // Bounding box 계산
+                    const minX = Math.min(...para.lines.map(l => l.left)) / scale;
+                    const maxX = Math.max(...para.lines.map(l => l.right)) / scale;
+                    const minY = Math.min(...para.lines.map(l => l.top)) / scale;
+                    const maxY = Math.max(...para.lines.map(l => l.bottom)) / scale;
+                    const width = maxX - minX;
+                    const height = maxY - minY;
+                    
+                    // 세로로 긴 박스 무시 (width < height * 0.5로 더 공격적으로)
+                    if (width < height * 0.5) {
+                        console.log(`Skip vertical: "${text.substring(0, 30)}..."`);
+                        return null;
+                    }
+                    
+                    // 페이지 가장자리에 있는 좁은 텍스트 무시 (사이드바, 로고 등)
+                    if ((minX < pageWidth * 0.05 / scale || maxX > pageWidth * 0.95 / scale) && width < pageWidth * 0.1 / scale) {
+                        console.log(`Skip edge text: "${text.substring(0, 30)}..."`);
+                        return null;
+                    }
+                    
+                    // 참조/인용 번호만 있는 경우 무시
+                    if (/^\[[\d,\-\s]+\]$/.test(text) || /^[\d,\s]+$/.test(text)) {
+                        return null;
+                    }
+                    
+                    const avgFontSize = para.lines.reduce((sum, l) => sum + l.avgFontSize, 0) / para.lines.length;
+                    const isHeading = avgFontSize > 13 && text.length < 100 && para.lines.length <= 2;
+                    
+                    return {
+                        bounds: { x: minX, y: minY, w: width, h: height },
+                        text,
+                        isHeading,
+                        avgFontSize,
+                        minY
+                    };
+                };
+                
+                let allParagraphs = [];
+                
+                if (is2Column) {
+                    // 2-column 처리: 각 영역에 맞는 columnType 전달
+                    const fullWidthParas = groupLinesToParagraphs(fullWidthLines, 'fullwidth');
+                    const leftParas = groupLinesToParagraphs(leftLines, 'left');
+                    const rightParas = groupLinesToParagraphs(rightLines, 'right');
+                    
+                    // 컬럼 Y 범위
+                    let leftYRange = { min: Infinity, max: -Infinity };
+                    leftLines.forEach(l => {
+                        leftYRange.min = Math.min(leftYRange.min, l.top);
+                        leftYRange.max = Math.max(leftYRange.max, l.bottom);
+                    });
+                    
+                    // full-width 분류
+                    const topFullWidth = fullWidthParas.filter(p => p.minY * scale < leftYRange.min);
+                    const bottomFullWidth = fullWidthParas.filter(p => p.minY * scale >= leftYRange.max);
+                    
+                    // 순서: 상단 full -> 좌측 -> 우측 -> 하단 full
+                    allParagraphs = [
+                        ...topFullWidth.sort((a, b) => a.minY - b.minY),
+                        ...leftParas.sort((a, b) => a.minY - b.minY),
+                        ...rightParas.sort((a, b) => a.minY - b.minY),
+                        ...bottomFullWidth.sort((a, b) => a.minY - b.minY)
+                    ];
+                } else {
+                    // Single column
+                    allParagraphs = groupLinesToParagraphs(lines);
+                    allParagraphs.sort((a, b) => a.minY - b.minY);
+                }
+                
+                // sections에 추가
+                allParagraphs.forEach(para => {
+                    // 헤딩이면 새 섹션 생성
+                    if (para.isHeading && /^(\d+\.?\s*)?[A-Z]/.test(para.text) && para.text.length < 80) {
+                        currentSection = { title: para.text, paragraphs: [] };
+                        this.sections.push(currentSection);
+                    }
+                    
+                    const paraId = `p${pageNum}_${paragraphIndex++}`;
+                    currentSection.paragraphs.push({
+                        id: paraId,
+                        text: para.text,
+                        pageNum: pageNum,
+                        bounds: para.bounds,
+                        isHeading: para.isHeading
+                    });
+                });
+            }
+
+            // 특정 좌표에 해당하는 문단 찾기 (다중 페이지 지원)
+            findParagraphAt(pageNum, x, y, scale) {
+                for (const section of this.sections) {
+                    for (const para of section.paragraphs) {
+                        // bboxes 배열이 있으면 모든 bbox 확인
+                        const bboxes = para.bboxes || (para.bounds ? [{
+                            pageNum: para.pageNum,
+                            x: para.bounds.x,
+                            y: para.bounds.y,
+                            w: para.bounds.w,
+                            h: para.bounds.h
+                        }] : []);
+                        
+                        for (const bbox of bboxes) {
+                            if (bbox.pageNum !== pageNum) continue;
+                            
+                            const sx = bbox.x * scale;
+                            const sy = bbox.y * scale;
+                            const sw = bbox.w * scale;
+                            const sh = bbox.h * scale;
+
+                            if (x >= sx && x <= sx + sw && y >= sy && y <= sy + sh) {
+                                return { section, paragraph: para };
+                            }
+                        }
+                    }
+                }
+                return null;
+            }
+
+            // 문단 ID로 섹션 정보 찾기
+            findSectionByParagraphId(paraId) {
+                for (const section of this.sections) {
+                    const para = section.paragraphs.find(p => p.id === paraId);
+                    if (para) return { section, paragraph: para };
+                }
+                return null;
+            }
+
+            // 노트 저장/로드
+            setNote(paraId, text) {
+                this.notes[paraId] = text;
+            }
+
+            getNote(paraId) {
+                return this.notes[paraId] || '';
+            }
+
+            // 저장용 객체 (PDF 데이터 제외)
+            toJSON() {
+                return {
+                    id: this.id,
+                    title: this.title,
+                    authors: this.authors,
+                    fileName: this.fileName,
+                    fileSize: this.fileSize,
+                    folderId: this.folderId,
+                    addedAt: this.addedAt,
+                    lastRead: this.lastRead,
+                    sections: this.sections,
+                    notes: this.notes
+                };
+            }
+
+            static fromJSON(json) {
+                const doc = new PaperDocument(json.id);
+                Object.assign(doc, json);
+                return doc;
+            }
+        }
+
+        // ========== IndexedDB ==========
+        let db = null;
+        const DB_NAME = 'FocusReadDB';
+        const DB_VERSION = 3; // grobidCache 스토어 추가
+
+        async function openDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(DB_NAME, DB_VERSION);
+                req.onerror = () => reject(req.error);
+                req.onsuccess = () => { db = req.result; resolve(db); };
+                req.onupgradeneeded = (e) => {
+                    const d = e.target.result;
+                    if (!d.objectStoreNames.contains('papers')) d.createObjectStore('papers', { keyPath: 'id' });
+                    if (!d.objectStoreNames.contains('pdfData')) d.createObjectStore('pdfData', { keyPath: 'id' });
+                    if (!d.objectStoreNames.contains('folders')) d.createObjectStore('folders', { keyPath: 'id' });
+                    if (!d.objectStoreNames.contains('grobidCache')) d.createObjectStore('grobidCache', { keyPath: 'id' });
+                };
+            });
+        }
+
+        async function dbGetAll(store) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(store, 'readonly');
+                const req = tx.objectStore(store).getAll();
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function dbGet(store, id) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(store, 'readonly');
+                const req = tx.objectStore(store).get(id);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function dbPut(store, data) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(store, 'readwrite');
+                const req = tx.objectStore(store).put(data);
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function dbDelete(store, id) {
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(store, 'readwrite');
+                const objectStore = tx.objectStore(store);
+                const req = objectStore.delete(id);
+                
+                tx.oncomplete = () => {
+                    console.log(`✅ DB Delete transaction complete: ${store}/${id}`);
+                    resolve();
+                };
+                tx.onerror = () => {
+                    console.error(`❌ DB Delete transaction error: ${store}/${id}`, tx.error);
+                    reject(tx.error);
+                };
+                req.onerror = () => {
+                    console.error(`❌ DB Delete request error: ${store}/${id}`, req.error);
+                };
+            });
+        }
+
+        // ========== State ==========
+        let papers = []; // PaperDocument[]
+        let folders = [];
+        let currentFilter = 'all';
+        let currentFolderId = null;
+
+        let pdfDoc = null;
+        let currentPaper = null; // PaperDocument
+        let currentScale = 1.0;
+        let baseScale = 1.0;
+        let selectedParagraph = null;
+        let selectedSection = null;
+        let sentences = [];
+        let sentenceIndex = 0;
+        let apiKey = localStorage.getItem('claude_api_key') || '';
+
+        // ========== Init ==========
+        document.addEventListener('DOMContentLoaded', async () => {
+            await openDB();
+            
+            const papersData = await dbGetAll('papers');
+            papers = papersData.map(p => PaperDocument.fromJSON(p));
+            folders = await dbGetAll('folders');
+            
+            renderFolders();
+            renderPapers();
+            updateCounts();
+            setupEvents();
+            restoreCollapsedState();
+        });
+
+        function setupEvents() {
+            document.getElementById('file-input').addEventListener('change', e => {
+                if (e.target.files[0]) addPaper(e.target.files[0]);
+                e.target.value = '';
+            });
+
+            document.addEventListener('dragover', e => {
+                e.preventDefault();
+                document.getElementById('drop-zone').classList.add('active');
+            });
+            document.addEventListener('dragleave', e => {
+                if (!e.relatedTarget) document.getElementById('drop-zone').classList.remove('active');
+            });
+            document.addEventListener('drop', e => {
+                e.preventDefault();
+                document.getElementById('drop-zone').classList.remove('active');
+                if (e.dataTransfer.files[0]?.type === 'application/pdf') {
+                    addPaper(e.dataTransfer.files[0]);
+                }
+            });
+
+            document.addEventListener('keydown', e => {
+                if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+                if (!selectedParagraph || !currentPaper) return;
+                
+                const allParas = currentPaper.sections.flatMap(s => 
+                    s.paragraphs.map(p => ({ section: s, paragraph: p }))
+                );
+                const currentIdx = allParas.findIndex(x => x.paragraph.id === selectedParagraph.id);
+                
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    // Next sentence
+                    if (sentenceIndex < sentences.length - 1) {
+                        sentenceIndex++;
+                        highlightSentence();
+                        updateActiveSentenceChunks();
+                    } else if (currentIdx < allParas.length - 1) {
+                        // Next paragraph
+                        const next = allParas[currentIdx + 1];
+                        selectParagraphAndScroll(next.section, next.paragraph);
+                    }
+                } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    // Previous sentence
+                    if (sentenceIndex > 0) {
+                        sentenceIndex--;
+                        highlightSentence();
+                        updateActiveSentenceChunks();
+                    } else if (currentIdx > 0) {
+                        // Previous paragraph (last sentence)
+                        const prev = allParas[currentIdx - 1];
+                        selectParagraphAndScroll(prev.section, prev.paragraph, 'last');
+                    }
+                }
+            });
+
+            document.getElementById('notes-textarea').addEventListener('input', saveNote);
+            document.getElementById('chat-input').addEventListener('keydown', e => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+            });
+
+            // 오른쪽 패널 리사이즈
+            setupPanelResize();
+            setupSectionResize();
+        }
+
+        function setupPanelResize() {
+            const handle = document.getElementById('resize-handle');
+            const panel = document.getElementById('right-panel');
+            let isResizing = false;
+            let startX, startWidth;
+
+            handle.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                startX = e.clientX;
+                startWidth = panel.offsetWidth;
+                handle.classList.add('dragging');
+                document.body.style.cursor = 'ew-resize';
+                document.body.style.userSelect = 'none';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                const diff = startX - e.clientX;
+                const newWidth = Math.min(Math.max(startWidth + diff, 300), 800);
+                panel.style.width = newWidth + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isResizing) {
+                    isResizing = false;
+                    handle.classList.remove('dragging');
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                }
+            });
+        }
+
+        // 섹션 세로 리사이즈 (여러 핸들 지원)
+        function setupSectionResize() {
+            const handles = document.querySelectorAll('.section-resize-handle');
+            let isResizing = false;
+            let currentHandle = null;
+            let aboveSection = null;
+            let belowSection = null;
+            let startY, startAboveHeight, startBelowHeight;
+
+            handles.forEach(handle => {
+                handle.addEventListener('mousedown', (e) => {
+                    const aboveId = handle.dataset.above;
+                    const belowId = handle.dataset.below;
+                    aboveSection = document.getElementById(aboveId);
+                    belowSection = document.getElementById(belowId);
+                    
+                    if (!aboveSection || !belowSection) return;
+                    // 접혀있는 섹션은 리사이즈 불가
+                    if (aboveSection.classList.contains('collapsed') || belowSection.classList.contains('collapsed')) return;
+                    
+                    isResizing = true;
+                    currentHandle = handle;
+                    startY = e.clientY;
+                    startAboveHeight = aboveSection.offsetHeight;
+                    startBelowHeight = belowSection.offsetHeight;
+                    handle.classList.add('dragging');
+                    document.body.style.cursor = 'ns-resize';
+                    document.body.style.userSelect = 'none';
+                    e.preventDefault();
+                });
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing || !aboveSection || !belowSection) return;
+                const diff = e.clientY - startY;
+                const newAboveHeight = Math.max(60, startAboveHeight + diff);
+                const newBelowHeight = Math.max(60, startBelowHeight - diff);
+                
+                // flex 비율 대신 고정 높이 사용
+                aboveSection.style.flex = 'none';
+                aboveSection.style.height = newAboveHeight + 'px';
+                belowSection.style.flex = 'none';
+                belowSection.style.height = newBelowHeight + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (isResizing && currentHandle) {
+                    isResizing = false;
+                    currentHandle.classList.remove('dragging');
+                    currentHandle = null;
+                    aboveSection = null;
+                    belowSection = null;
+                    document.body.style.cursor = '';
+                    document.body.style.userSelect = '';
+                }
+            });
+        }
+
+        // ========== Library ==========
+        function renderFolders() {
+            document.getElementById('folder-list').innerHTML = folders.map(f => `
+                <div class="sidebar-item folder-item ${currentFilter === 'folder' && currentFolderId === f.id ? 'active' : ''}"
+                     onclick="setFilter('folder', '${f.id}')">
+                    <span>📁</span> ${f.name}
+                    <span class="sidebar-item-count">${papers.filter(p => p.folderId === f.id).length}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderPapers() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            let list = [...papers];
+
+            if (currentFilter === 'recent') {
+                list = list.filter(p => p.lastRead).sort((a, b) => new Date(b.lastRead) - new Date(a.lastRead)).slice(0, 10);
+            } else if (currentFilter === 'folder') {
+                list = list.filter(p => p.folderId === currentFolderId);
+            } else {
+                list.sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt));
+            }
+
+            if (search) list = list.filter(p => p.title.toLowerCase().includes(search) || p.authors.toLowerCase().includes(search));
+
+            const container = document.getElementById('paper-list-content');
+            if (!list.length) {
+                container.innerHTML = `<div class="empty-library"><div class="empty-library-icon">📚</div><div>논문이 없습니다</div></div>`;
+                return;
+            }
+
+            container.innerHTML = list.map(p => {
+                const folder = folders.find(f => f.id === p.folderId);
+                return `
+                    <div class="paper-item" onclick="openPaper('${p.id}')">
+                        <div class="paper-title">${p.title || p.fileName}</div>
+                        <div class="paper-authors">${p.authors || '-'}</div>
+                        <div class="paper-meta">${formatDate(p.addedAt)}</div>
+                        <div class="paper-folder">${folder ? '📁 ' + folder.name : '-'}</div>
+                        <div class="paper-actions">
+                            <button class="delete-btn" onclick="event.stopPropagation(); deletePaper('${p.id}')">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function updateCounts() {
+            document.getElementById('count-all').textContent = papers.length;
+            document.getElementById('count-recent').textContent = papers.filter(p => p.lastRead).length;
+        }
+
+        function setFilter(filter, folderId = null) {
+            currentFilter = filter;
+            currentFolderId = folderId;
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            if (filter === 'folder') {
+                document.querySelector(`.sidebar-item[onclick*="${folderId}"]`)?.classList.add('active');
+                document.getElementById('library-title').textContent = folders.find(f => f.id === folderId)?.name || '폴더';
+            } else {
+                document.querySelector(`.sidebar-item[data-filter="${filter}"]`)?.classList.add('active');
+                document.getElementById('library-title').textContent = filter === 'all' ? '전체 논문' : '최근 읽은';
+            }
+            renderPapers();
+        }
+
+        function formatDate(str) {
+            const d = new Date(str);
+            const diff = (Date.now() - d) / (1000 * 60 * 60 * 24);
+            if (diff < 1) return '오늘';
+            if (diff < 2) return '어제';
+            if (diff < 7) return Math.floor(diff) + '일 전';
+            return d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+        }
+
+        async function createFolder() {
+            const name = document.getElementById('folder-name-input').value.trim();
+            if (!name) return;
+            const folder = { id: 'f_' + Date.now(), name, createdAt: new Date().toISOString() };
+            await dbPut('folders', folder);
+            folders.push(folder);
+            renderFolders();
+            closeModal('folder-modal');
+            document.getElementById('folder-name-input').value = '';
+        }
+
+        // ========== Paper Management ==========
+        async function addPaper(file) {
+            const existing = papers.find(p => p.fileName === file.name && p.fileSize === file.size);
+            if (existing) { 
+                console.log('📄 Found existing paper in memory:', existing.id, existing.title);
+                openPaper(existing.id); 
+                return; 
+            }
+
+            try {
+                console.log('📥 Adding new paper:', file.name);
+                const arrayBuffer = await file.arrayBuffer();
+                const dataArray = Array.from(new Uint8Array(arrayBuffer));
+                const pdfData = new Uint8Array(dataArray);
+                const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+
+                // PaperDocument 생성
+                const id = 'p_' + Date.now();
+                console.log('🆔 New paper ID:', id);
+                const paper = new PaperDocument(id);
+                paper.fileName = file.name;
+                paper.fileSize = file.size;
+                paper.folderId = currentFilter === 'folder' ? currentFolderId : null;
+                paper.title = file.name.replace('.pdf', '');
+
+                // 기본 메타데이터만 추출 (구조는 렌더링 후 추출)
+                await paper.extractBasicInfo(pdf);
+                console.log('📋 After extractBasicInfo - title:', paper.title);
+
+                // 저장
+                await dbPut('pdfData', { id, data: dataArray });
+                await dbPut('papers', paper.toJSON());
+                papers.push(paper);
+
+                updateCounts();
+                renderPapers();
+                renderFolders();
+                openPaper(id);
+
+            } catch (err) {
+                console.error('Add paper error:', err);
+                alert('오류: ' + err.message);
+            }
+        }
+
+        async function deletePaper(id) {
+            if (!confirm('삭제하시겠습니까?')) return;
+            console.log('🗑️ Deleting paper:', id);
+            console.log('📊 Papers before delete:', papers.length, papers.map(p => p.id));
+            
+            try {
+                await dbDelete('papers', id);
+                await dbDelete('pdfData', id);
+                await dbDelete('grobidCache', id); // Grobid 캐시도 삭제
+            } catch (e) {
+                console.error('❌ Delete failed:', e);
+                alert('삭제 실패: ' + e.message);
+                return;
+            }
+            
+            papers = papers.filter(p => p.id !== id);
+            console.log('📊 Papers after delete:', papers.length, papers.map(p => p.id));
+            
+            // DB에서 실제로 삭제되었는지 확인
+            const check = await dbGet('papers', id);
+            if (check) {
+                console.error('❌ Paper still exists in DB after delete!');
+            } else {
+                console.log('✅ Confirmed: Paper removed from DB');
+            }
+            
+            renderPapers();
+            updateCounts();
+        }
+
+        async function openPaper(id) {
+            currentPaper = papers.find(p => p.id === id);
+            if (!currentPaper) return;
+
+            console.log('📂 Opening paper:', id, currentPaper.title);
+            console.log('📊 Current state - sections:', currentPaper.sections?.length, 'serverParsed:', currentPaper.serverParsed);
+            
+            currentPaper.lastRead = new Date().toISOString();
+            
+            // 🔄 논문 전환 시 UI 초기화
+            resetReaderUI();
+            
+            // 캐시가 있으면 재사용, 없으면 초기화
+            // (extractFromServer에서 캐시 확인함)
+            
+            // 파싱 상태 UI 초기화
+            const statusEl = document.getElementById('parse-status');
+            if (statusEl) {
+                statusEl.textContent = '';
+                statusEl.style.color = '';
+            }
+
+            document.getElementById('library-view').classList.add('hidden');
+            document.getElementById('reader-view').classList.add('active');
+            document.getElementById('back-btn').style.display = 'block';
+            document.getElementById('header-title').textContent = currentPaper.title;
+
+            const container = document.getElementById('pdf-container');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div>로딩 중...</div>';
+
+            try {
+                const record = await dbGet('pdfData', id);
+                if (!record?.data) throw new Error('PDF 데이터 없음');
+
+                const uint8 = new Uint8Array(record.data);
+                
+                // 🚀 Grobid 서버로 먼저 파싱 시도
+                await currentPaper.extractFromServer(record.data);
+                
+                // Grobid에서 제목/저자 추출 후 헤더 업데이트
+                document.getElementById('header-title').textContent = currentPaper.title;
+                
+                pdfDoc = await pdfjsLib.getDocument({ data: uint8 }).promise;
+
+                // 가로 꽉 차게 스케일 계산
+                const page1 = await pdfDoc.getPage(1);
+                const vp = page1.getViewport({ scale: 1 });
+                baseScale = (container.clientWidth - 40) / vp.width;
+                currentScale = baseScale;
+
+                await renderPages();
+                await renderThumbnails();
+                updateZoom();
+                
+                // 서버 파싱 성공했으면 오버레이 그리기 (서버가 좌표 제공)
+                if (currentPaper.serverParsed) {
+                    const firstPara = currentPaper.sections[0]?.paragraphs[0];
+                    const hasCoords = firstPara && firstPara.bounds;
+                    
+                    if (hasCoords) {
+                        renderParagraphOverlays();
+                        console.log('✅ Server provided coordinates - rendering overlays');
+                    } else {
+                        // 좌표 없음 - 섹션 브라우저 모드
+                        console.log('⚠️ No coordinates from server - using section browser');
+                        initGrobidMode();
+                    }
+                    
+                    // Grobid 파싱 결과를 DB에 저장 (제목, 저자, 섹션 등)
+                    await dbPut('papers', currentPaper.toJSON());
+                    renderPapers(); // 목록 업데이트
+                }
+
+            } catch (err) {
+                console.error('Open error:', err);
+                container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">❌</div>${err.message}</div>`;
+            }
+        }
+
+        // 논문 전환 시 UI 초기화
+        function resetReaderUI() {
+            // 선택 상태 초기화
+            selectedSection = null;
+            selectedParagraph = null;
+            sentences = [];
+            sentenceIndex = 0;
+            
+            // 문단 리더 초기화
+            document.getElementById('paragraph-header').style.display = 'none';
+            document.getElementById('paragraph-content').innerHTML = '<div class="empty-state"><div class="empty-state-icon">👆</div><div>PDF에서 문단을 클릭하세요</div></div>';
+            
+            // 노트 초기화
+            document.getElementById('notes-textarea').value = '';
+            document.getElementById('notes-textarea').dataset.paraId = '';
+            
+            // 채팅 초기화
+            document.getElementById('chat-messages').innerHTML = '<div class="chat-message assistant">논문에 대해 질문해 주세요.</div>';
+            
+            // PDF 오버레이 초기화
+            clearSentenceOverlays();
+            document.querySelectorAll('.paragraph-block.selected').forEach(el => el.classList.remove('selected'));
+            
+            // 섹션 브라우저 초기화
+            document.getElementById('section-browser').innerHTML = '';
+        }
+
+        function backToLibrary() {
+            document.getElementById('reader-view').classList.remove('active');
+            document.getElementById('library-view').classList.remove('hidden');
+            document.getElementById('back-btn').style.display = 'none';
+            document.getElementById('header-title').textContent = 'FocusRead';
+            document.getElementById('paragraph-header').style.display = 'none';
+            document.getElementById('paragraph-content').innerHTML = '<div class="empty-state"><div class="empty-state-icon">👆</div><div>PDF에서 문단을 클릭하세요</div></div>';
+            
+            // Reset Grobid mode UI
+            document.getElementById('browser-toggle').style.display = 'none';
+            document.getElementById('section-browser').style.display = 'none';
+            document.getElementById('section-browser').innerHTML = '';
+            document.getElementById('paragraph-content').style.display = 'block';
+            browserMode = true;
+            
+            pdfDoc = null;
+            currentPaper = null;
+            selectedParagraph = null;
+            sentences = [];
+            
+            renderPapers();
+            updateCounts();
+        }
+
+        // ========== PDF Rendering ==========
+        async function renderPages() {
+            const container = document.getElementById('pdf-container');
+            container.innerHTML = '';
+            const dpr = window.devicePixelRatio || 2;
+
+            // 1단계: 모든 페이지 렌더링 (canvas + textLayer)
+            const pageWrappers = [];
+            
+            for (let num = 1; num <= pdfDoc.numPages; num++) {
+                const page = await pdfDoc.getPage(num);
+                const vp = page.getViewport({ scale: currentScale });
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'pdf-page';
+                wrapper.dataset.page = num;
+                wrapper.style.width = vp.width + 'px';
+                wrapper.style.height = vp.height + 'px';
+
+                // Canvas
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = vp.width * dpr;
+                canvas.height = vp.height * dpr;
+                canvas.style.width = vp.width + 'px';
+                canvas.style.height = vp.height + 'px';
+                ctx.scale(dpr, dpr);
+                wrapper.appendChild(canvas);
+
+                // Text layer
+                const textLayer = document.createElement('div');
+                textLayer.className = 'textLayer';
+                textLayer.style.width = vp.width + 'px';
+                textLayer.style.height = vp.height + 'px';
+                textLayer.style.setProperty('--scale-factor', String(currentScale));
+                wrapper.appendChild(textLayer);
+
+                container.appendChild(wrapper);
+                pageWrappers.push({ wrapper, page, vp, canvas, ctx, textLayer, num });
+            }
+
+            // 2단계: 렌더링 실행
+            for (const pw of pageWrappers) {
+                await pw.page.render({ canvasContext: pw.ctx, viewport: pw.vp }).promise;
+                
+                const textContent = await pw.page.getTextContent();
+                await pdfjsLib.renderTextLayer({
+                    textContentSource: textContent,
+                    container: pw.textLayer,
+                    viewport: pw.vp,
+                    textDivs: []
+                }).promise;
+            }
+
+            // 3단계: DOM 기반으로 문단 추출 (첫 로드 시 또는 sections가 비어있을 때)
+            if (currentPaper && currentPaper.sections.length === 0) {
+                currentPaper.sections = []; // 초기화
+                
+                for (const pw of pageWrappers) {
+                    currentPaper.extractParagraphsFromDOM(pw.num, pw.textLayer, currentScale);
+                }
+                
+                // 첫 번째 문단에서 제목 추출 (첫 페이지 상단의 가장 큰 폰트)
+                if (!currentPaper.title || currentPaper.title === currentPaper.fileName.replace('.pdf', '')) {
+                    const page1Paras = currentPaper.sections.flatMap(s => s.paragraphs).filter(p => p.pageNum === 1);
+                    
+                    if (page1Paras.length > 0) {
+                        // 상단 1/3 영역의 문단들 중에서 선택
+                        const topParas = page1Paras.filter(p => p.bounds.y < 200);
+                        
+                        if (topParas.length > 0) {
+                            // y좌표가 가장 작은 (가장 위에 있는) 문단을 제목으로
+                            const titlePara = topParas.reduce((a, b) => a.bounds.y < b.bounds.y ? a : b);
+                            currentPaper.title = titlePara.text;
+                            console.log('Title extracted:', titlePara.text);
+                        } else {
+                            // 상단 영역에 없으면 첫 번째 문단
+                            currentPaper.title = page1Paras[0].text;
+                        }
+                    }
+                }
+                
+                // 저장
+                await dbPut('papers', currentPaper.toJSON());
+                
+                console.log('=== Extracted Structure ===');
+                console.log(`Sections: ${currentPaper.sections.length}`);
+                currentPaper.sections.forEach(s => {
+                    console.log(`[${s.title}] ${s.paragraphs.length} paragraphs`);
+                });
+            }
+
+            // 4단계: Paragraph overlay 추가
+            for (const pw of pageWrappers) {
+                const paraLayer = document.createElement('div');
+                paraLayer.className = 'paragraph-layer';
+
+                if (currentPaper) {
+                    for (const section of currentPaper.sections) {
+                        for (const para of section.paragraphs) {
+                            // Grobid 모드에서는 bounds가 없음 - 스킵
+                            if (!para.bounds) continue;
+                            if (para.pageNum !== pw.num) continue;
+
+                            const block = document.createElement('div');
+                            block.className = 'paragraph-block' + (para.isHeading ? ' is-heading' : '');
+                            // bounds는 scale=1.0 기준이므로 currentScale 곱하기
+                            block.style.left = (para.bounds.x * currentScale) + 'px';
+                            block.style.top = (para.bounds.y * currentScale) + 'px';
+                            block.style.width = (para.bounds.w * currentScale) + 'px';
+                            block.style.height = (para.bounds.h * currentScale) + 'px';
+                            block.dataset.paraId = para.id;
+                            block.dataset.debug = `${para.id}`;
+
+                            paraLayer.appendChild(block);
+                        }
+                    }
+                }
+                
+                // textLayer 앞에 삽입
+                pw.wrapper.insertBefore(paraLayer, pw.textLayer);
+
+                // 더블클릭 이벤트
+                pw.wrapper.addEventListener('dblclick', (e) => {
+                    const rect = pw.wrapper.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const result = findParagraphAtPosition(pw.num, x, y);
+                    if (result) {
+                        selectParagraph(result.section, result.paragraph);
+                    }
+                });
+            }
+
+            // 텍스트 선택 이벤트
+            container.removeEventListener('mouseup', handleTextSelection);
+            container.addEventListener('mouseup', handleTextSelection);
+        }
+
+        // 문단 오버레이만 다시 그리기 (서버 파싱 후 호출)
+        function renderParagraphOverlays() {
+            if (!currentPaper) return;
+            
+            const container = document.getElementById('pdf-container');
+            const pageWrappers = container.querySelectorAll('.pdf-page');
+            
+            pageWrappers.forEach((wrapper, idx) => {
+                const pageNum = idx + 1;
+                
+                // 기존 paragraph-layer 제거
+                const existingLayer = wrapper.querySelector('.paragraph-layer');
+                if (existingLayer) {
+                    existingLayer.remove();
+                }
+                
+                // 새 paragraph-layer 생성
+                const paraLayer = document.createElement('div');
+                paraLayer.className = 'paragraph-layer';
+                
+                for (const section of currentPaper.sections) {
+                    for (const para of section.paragraphs) {
+                        // bboxes 배열이 있으면 여러 개의 박스 생성 (다중 페이지 지원)
+                        if (para.bboxes && para.bboxes.length > 0) {
+                            for (const bbox of para.bboxes) {
+                                if (bbox.pageNum !== pageNum) continue;
+                                
+                                const block = document.createElement('div');
+                                block.className = 'paragraph-block' + (para.isHeading ? ' is-heading' : '');
+                                block.style.left = (bbox.x * currentScale) + 'px';
+                                block.style.top = (bbox.y * currentScale) + 'px';
+                                block.style.width = (bbox.w * currentScale) + 'px';
+                                block.style.height = (bbox.h * currentScale) + 'px';
+                                block.dataset.paraId = para.id;
+                                block.dataset.debug = para.id;
+                                
+                                paraLayer.appendChild(block);
+                            }
+                        } else if (para.bounds) {
+                            // 기존 단일 bounds 지원 (하위호환)
+                            if (para.pageNum !== pageNum) continue;
+                            
+                            const block = document.createElement('div');
+                            block.className = 'paragraph-block' + (para.isHeading ? ' is-heading' : '');
+                            block.style.left = (para.bounds.x * currentScale) + 'px';
+                            block.style.top = (para.bounds.y * currentScale) + 'px';
+                            block.style.width = (para.bounds.w * currentScale) + 'px';
+                            block.style.height = (para.bounds.h * currentScale) + 'px';
+                            block.dataset.paraId = para.id;
+                            block.dataset.debug = para.id;
+                            
+                            paraLayer.appendChild(block);
+                        }
+                        // bounds가 없으면 스킵 (Grobid 전용 모드)
+                    }
+                }
+                
+                // textLayer 앞에 삽입
+                const textLayer = wrapper.querySelector('.textLayer');
+                if (textLayer) {
+                    wrapper.insertBefore(paraLayer, textLayer);
+                } else {
+                    wrapper.appendChild(paraLayer);
+                }
+            });
+            
+            console.log('✅ Paragraph overlays rendered');
+        }
+
+        // 좌표로 문단 찾기 (클릭 좌표는 현재 스케일 기준)
+        function findParagraphAtPosition(pageNum, clickX, clickY) {
+            if (!currentPaper) return null;
+
+            // 클릭 좌표를 scale=1.0 기준으로 변환
+            const x = clickX / currentScale;
+            const y = clickY / currentScale;
+            
+            console.log(`Click: screen(${clickX.toFixed(0)}, ${clickY.toFixed(0)}) → base(${x.toFixed(0)}, ${y.toFixed(0)}) on page ${pageNum}`);
+
+            for (const section of currentPaper.sections) {
+                for (const para of section.paragraphs) {
+                    // bboxes 배열 확인 (여러 페이지/컬럼 지원)
+                    if (para.bboxes && para.bboxes.length > 0) {
+                        for (const b of para.bboxes) {
+                            if (b.pageNum !== pageNum) continue;
+                            if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+                                console.log(`✓ Found via bboxes: "${para.text.substring(0, 40)}..."`);
+                                return { section, paragraph: para };
+                            }
+                        }
+                    } else if (para.bounds) {
+                        // 기존 단일 bounds (하위호환)
+                        if (para.pageNum !== pageNum) continue;
+                        const b = para.bounds;
+                        if (x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h) {
+                            console.log(`✓ Found via bounds: "${para.text.substring(0, 40)}..."`);
+                            return { section, paragraph: para };
+                        }
+                    }
+                }
+            }
+            
+            console.log('✗ No paragraph at this position');
+            return null;
+        }
+
+        // ========== Section Browser (Grobid 모드) ==========
+        let browserMode = true; // true = 섹션 브라우저, false = 리더
+
+        function showBrowser() {
+            browserMode = true;
+            document.getElementById('btn-browser').classList.add('active');
+            document.getElementById('btn-reader').classList.remove('active');
+            document.getElementById('section-browser').style.display = 'block';
+            document.getElementById('paragraph-content').style.display = 'none';
+            document.getElementById('paragraph-header').style.display = 'none';
+        }
+
+        function showReader() {
+            browserMode = false;
+            document.getElementById('btn-browser').classList.remove('active');
+            document.getElementById('btn-reader').classList.add('active');
+            document.getElementById('section-browser').style.display = 'none';
+            document.getElementById('paragraph-content').style.display = 'block';
+            if (selectedParagraph) {
+                document.getElementById('paragraph-header').style.display = 'block';
+            }
+        }
+
+        function renderSectionBrowser() {
+            if (!currentPaper || !currentPaper.sections.length) return;
+            
+            const container = document.getElementById('section-browser');
+            const totalParas = currentPaper.sections.reduce((s, sec) => s + sec.paragraphs.length, 0);
+            
+            let html = `<div style="padding: 8px; font-size: 11px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); margin-bottom: 8px;">`;
+            html += `📄 ${currentPaper.sections.length}개 섹션, ${totalParas}개 문단</div>`;
+            
+            currentPaper.sections.forEach((section, si) => {
+                html += `<div class="section-browser-item">`;
+                html += `<div class="section-browser-title" onclick="toggleBrowserSection(${si})" data-section="${si}">`;
+                html += `<span class="section-collapse" id="collapse-${si}">▼</span> ${section.title}</div>`;
+                html += `<div class="section-browser-paras" id="section-paras-${si}">`;
+                
+                section.paragraphs.forEach((para, pi) => {
+                    const preview = para.text.substring(0, 80).replace(/</g, '&lt;') + (para.text.length > 80 ? '...' : '');
+                    html += `<div class="section-para-item${para.isHeading ? ' is-heading' : ''}" `;
+                    html += `data-para-id="${para.id}" onclick="selectFromBrowser('${para.id}')">`;
+                    html += preview;
+                    html += `</div>`;
+                });
+                
+                html += `</div></div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function toggleBrowserSection(sectionIndex) {
+            const parasDiv = document.getElementById(`section-paras-${sectionIndex}`);
+            const collapseIcon = document.getElementById(`collapse-${sectionIndex}`);
+            if (parasDiv.style.display === 'none') {
+                parasDiv.style.display = 'block';
+                collapseIcon.textContent = '▼';
+            } else {
+                parasDiv.style.display = 'none';
+                collapseIcon.textContent = '▶';
+            }
+        }
+
+        function selectFromBrowser(paraId) {
+            if (!currentPaper) return;
+            for (const section of currentPaper.sections) {
+                const para = section.paragraphs.find(p => p.id === paraId);
+                if (para) {
+                    // 브라우저에서 active 표시
+                    document.querySelectorAll('.section-para-item').forEach(el => {
+                        el.classList.toggle('active', el.dataset.paraId === paraId);
+                    });
+                    
+                    // 문단 선택하고 리더 모드로 전환
+                    selectParagraph(section, para);
+                    showReader();
+                    return;
+                }
+            }
+        }
+
+        function initGrobidMode() {
+            // Grobid 모드면 브라우저 토글 표시
+            document.getElementById('browser-toggle').style.display = 'flex';
+            
+            // 섹션 브라우저 렌더링
+            renderSectionBrowser();
+            
+            // 브라우저 모드로 시작
+            showBrowser();
+            
+            // 첫 번째 문단 자동 선택 (있으면)
+            if (currentPaper.sections.length > 0 && currentPaper.sections[0].paragraphs.length > 0) {
+                const firstSection = currentPaper.sections[0];
+                const firstPara = firstSection.paragraphs[0];
+                
+                // 브라우저에서 active 표시
+                setTimeout(() => {
+                    document.querySelectorAll('.section-para-item').forEach(el => {
+                        el.classList.toggle('active', el.dataset.paraId === firstPara.id);
+                    });
+                }, 100);
+                
+                // 문단 데이터 준비 (리더 모드로 전환 시 바로 볼 수 있게)
+                selectParagraph(firstSection, firstPara);
+                
+                // 다시 브라우저 모드로 (selectParagraph가 리더로 전환하지 않도록)
+                document.getElementById('section-browser').style.display = 'block';
+                document.getElementById('paragraph-content').style.display = 'none';
+            }
+            
+            console.log('✅ Grobid mode initialized with section browser');
+        }
+
+        // 디버그 모드 토글
+        let debugMode = false;
+        function toggleDebug() {
+            debugMode = !debugMode;
+            document.getElementById('pdf-container').classList.toggle('debug-mode', debugMode);
+            document.getElementById('debug-btn').style.background = debugMode ? 'var(--accent-orange)' : '';
+            
+            const paraContent = document.getElementById('paragraph-content');
+            
+            if (debugMode && currentPaper) {
+                console.log('=== Debug Mode ON ===');
+                
+                // 오른쪽 패널에 전체 문단 목록 표시
+                let html = '<div style="font-size: 12px; line-height: 1.6;">';
+                html += `<div style="color: var(--accent-blue); margin-bottom: 12px;"><strong>총 ${currentPaper.sections.length}개 섹션, `;
+                html += `${currentPaper.sections.reduce((s, sec) => s + sec.paragraphs.length, 0)}개 문단</strong></div>`;
+                
+                currentPaper.sections.forEach((section, si) => {
+                    html += `<div style="color: var(--accent-orange); margin-top: 12px; font-weight: 600;">`;
+                    html += `[Section ${si}] ${section.title}</div>`;
+                    
+                    section.paragraphs.forEach(para => {
+                        const b = para.bounds;
+                        html += `<div style="margin: 4px 0; padding: 4px 8px; background: var(--bg-tertiary); border-radius: 4px; cursor: pointer;" `;
+                        html += `onclick="debugSelectPara('${para.id}')" `;
+                        html += `onmouseover="debugHighlight('${para.id}')" onmouseout="debugUnhighlight('${para.id}')">`;
+                        html += `<span style="color: var(--accent-green);">${para.id}</span> `;
+                        if (b) {
+                            html += `<span style="color: var(--text-muted);">y=${b.y.toFixed(0)}-${(b.y+b.h).toFixed(0)}</span>`;
+                        } else {
+                            html += `<span style="color: var(--text-muted);">(no coords)</span>`;
+                        }
+                        html += `<br>`;
+                        html += `<span style="color: var(--text-secondary);">${para.text.substring(0, 60)}...</span>`;
+                        html += `</div>`;
+                    });
+                });
+                html += '</div>';
+                
+                paraContent.innerHTML = html;
+                document.getElementById('paragraph-header').style.display = 'block';
+                document.getElementById('current-section-title').textContent = '🐛 Debug Mode';
+                document.getElementById('current-page-info').textContent = 'Click a paragraph to select';
+                
+            } else {
+                paraContent.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👆</div><div>PDF에서 문단을 클릭하세요</div></div>';
+                document.getElementById('paragraph-header').style.display = 'none';
+            }
+        }
+        
+        function debugHighlight(paraId) {
+            const block = document.querySelector(`.paragraph-block[data-para-id="${paraId}"]`);
+            if (block) block.style.background = 'rgba(74, 222, 128, 0.3)';
+        }
+        
+        function debugUnhighlight(paraId) {
+            const block = document.querySelector(`.paragraph-block[data-para-id="${paraId}"]`);
+            if (block) block.style.background = '';
+        }
+        
+        function debugSelectPara(paraId) {
+            if (!currentPaper) return;
+            for (const section of currentPaper.sections) {
+                const para = section.paragraphs.find(p => p.id === paraId);
+                if (para) {
+                    // 선택 및 스크롤
+                    selectParagraphAndScroll(section, para);
+                    debugMode = false;
+                    document.getElementById('pdf-container').classList.remove('debug-mode');
+                    document.getElementById('debug-btn').style.background = '';
+                    return;
+                }
+            }
+        }
+
+        // 텍스트 선택 완료 시 해당 문단 찾기
+        function handleTextSelection(e) {
+            const selection = window.getSelection();
+            if (!selection || selection.isCollapsed || !selection.toString().trim()) return;
+
+            // 선택 영역의 위치 가져오기
+            const range = selection.getRangeAt(0);
+            const rects = range.getClientRects();
+            if (rects.length === 0) return;
+
+            // 첫 번째 rect 사용
+            const firstRect = rects[0];
+            
+            // 해당 pdf-page 찾기
+            const pages = document.querySelectorAll('.pdf-page');
+            for (const page of pages) {
+                const pageRect = page.getBoundingClientRect();
+                
+                // 선택 영역이 이 페이지 안에 있는지 확인
+                if (firstRect.left >= pageRect.left && firstRect.left <= pageRect.right &&
+                    firstRect.top >= pageRect.top && firstRect.top <= pageRect.bottom) {
+                    
+                    const x = firstRect.left - pageRect.left;
+                    const y = firstRect.top - pageRect.top;
+                    const pageNum = parseInt(page.dataset.page);
+                    
+                    const result = findParagraphAtPosition(pageNum, x, y);
+                    if (result) {
+                        selectParagraph(result.section, result.paragraph);
+                    }
+                    break;
+                }
+            }
+        }
+
+        async function renderThumbnails() {
+            const sidebar = document.getElementById('thumbnail-sidebar');
+            sidebar.innerHTML = '';
+            const thumbWidth = 110;
+            const thumbHeight = 140;
+
+            for (let num = 1; num <= pdfDoc.numPages; num++) {
+                const page = await pdfDoc.getPage(num);
+                const vp = page.getViewport({ scale: 1 });
+                const scale = Math.min(thumbWidth / vp.width, thumbHeight / vp.height) * 0.9;
+                const scaledVp = page.getViewport({ scale });
+
+                const item = document.createElement('div');
+                item.className = 'thumbnail-item' + (num === 1 ? ' active' : '');
+                item.dataset.page = num;
+
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = scaledVp.width * 2;
+                canvas.height = scaledVp.height * 2;
+                canvas.style.width = scaledVp.width + 'px';
+                canvas.style.height = scaledVp.height + 'px';
+                ctx.scale(2, 2);
+
+                const badge = document.createElement('div');
+                badge.className = 'thumbnail-number';
+                badge.textContent = num;
+
+                item.appendChild(canvas);
+                item.appendChild(badge);
+                sidebar.appendChild(item);
+
+                item.onclick = () => scrollToPage(num);
+                page.render({ canvasContext: ctx, viewport: scaledVp });
+            }
+        }
+
+        function scrollToPage(num) {
+            document.querySelector(`.pdf-page[data-page="${num}"]`)?.scrollIntoView({ behavior: 'smooth' });
+            document.querySelectorAll('.thumbnail-item').forEach(el => {
+                el.classList.toggle('active', parseInt(el.dataset.page) === num);
+            });
+        }
+
+        document.getElementById('pdf-container').addEventListener('scroll', function() {
+            const pages = this.querySelectorAll('.pdf-page');
+            for (const page of pages) {
+                const rect = page.getBoundingClientRect();
+                if (rect.top < window.innerHeight && rect.bottom > 0) {
+                    const num = parseInt(page.dataset.page);
+                    document.querySelectorAll('.thumbnail-item').forEach(el => {
+                        el.classList.toggle('active', parseInt(el.dataset.page) === num);
+                    });
+                    break;
+                }
+            }
+        });
+
+        // ========== Paragraph Selection ==========
+        function selectParagraph(section, para, sentencePosition = 'first') {
+            // Visual update - PDF overlay (다중 페이지 지원: 같은 ID의 모든 블록 선택)
+            document.querySelectorAll('.paragraph-block.selected').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll(`.paragraph-block[data-para-id="${para.id}"]`).forEach(el => el.classList.add('selected'));
+            
+            // Visual update - Section browser
+            document.querySelectorAll('.section-para-item.active').forEach(el => el.classList.remove('active'));
+            const browserItem = document.querySelector(`.section-para-item[data-para-id="${para.id}"]`);
+            if (browserItem) {
+                browserItem.classList.add('active');
+                // 브라우저 모드일 때 스크롤
+                if (browserMode) {
+                    browserItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+
+            selectedSection = section;
+            selectedParagraph = para;
+            sentences = splitSentences(para.text);
+            sentenceIndex = sentencePosition === 'last' ? sentences.length - 1 : 0;
+
+            // 현재 문단 인덱스 계산
+            const allParas = currentPaper.sections.flatMap(s => s.paragraphs);
+            const paraIdx = allParas.findIndex(p => p.id === para.id) + 1;
+            const totalParas = allParas.length;
+
+            // Update header
+            document.getElementById('paragraph-header').style.display = 'block';
+            document.getElementById('current-section-title').textContent = section.title;
+            
+            // 다중 페이지 문단 표시
+            const bboxes = para.bboxes || [];
+            const pageNums = bboxes.map(b => b.pageNum).filter((v, i, a) => a.indexOf(v) === i);
+            const pageInfo = pageNums.length > 1 
+                ? `Pages ${pageNums.join('-')}` 
+                : (pageNums[0] ? `Page ${pageNums[0]}` : `Page ${para.pageNum || '?'}`);
+            
+            document.getElementById('current-page-info').textContent = `${pageInfo} • 문단 ${paraIdx}/${totalParas} • ${sentences.length}문장`;
+
+            renderSentences();
+
+            // Load note
+            document.getElementById('notes-textarea').value = currentPaper.getNote(para.id);
+            document.getElementById('notes-textarea').dataset.paraId = para.id;
+        }
+        
+        function selectParagraphAndScroll(section, para, sentencePosition = 'first') {
+            selectParagraph(section, para, sentencePosition);
+            scrollToParagraph(para);
+        }
+        
+        function scrollToParagraph(para) {
+            const block = document.querySelector(`.paragraph-block[data-para-id="${para.id}"]`);
+            if (block) {
+                const page = block.closest('.pdf-page');
+                if (page) {
+                    const container = document.getElementById('pdf-container');
+                    const pageRect = page.getBoundingClientRect();
+                    const blockRect = block.getBoundingClientRect();
+                    const containerRect = container.getBoundingClientRect();
+                    
+                    // 문단이 화면 중앙에 오도록 스크롤
+                    const scrollTop = container.scrollTop + (blockRect.top - containerRect.top) - (containerRect.height / 3);
+                    container.scrollTo({ top: scrollTop, behavior: 'smooth' });
+                }
+            }
+            
+            // 썸네일 업데이트
+            document.querySelectorAll('.thumbnail-item').forEach(el => {
+                el.classList.toggle('active', parseInt(el.dataset.page) === para.pageNum);
+            });
+        }
+
+        function splitSentences(text) {
+            // 약어들을 임시 토큰으로 치환
+            const abbreviations = [
+                'et al', 'i\\.e', 'e\\.g', 'Fig', 'Figs', 'Tab', 'Eq', 'Eqs',
+                'Dr', 'Mr', 'Mrs', 'Ms', 'Prof', 'Jr', 'Sr', 'Inc', 'Ltd', 'Corp',
+                'vs', 'etc', 'al', 'cf', 'viz', 'approx', 'ca', 'no', 'nos',
+                'Sec', 'Sect', 'Ch', 'Vol', 'pp', 'p', 'ed', 'eds', 'Trans',
+                'Proc', 'Conf', 'Int', 'Natl', 'Rev', 'Lett', 'Phys', 'Chem',
+                'Biol', 'Math', 'Comp', 'Sci', 'Eng', 'Med', 'Acad'
+            ];
+            
+            let processed = text;
+            const placeholders = [];
+            let placeholderIdx = 0;
+            
+            // 약어 + 마침표를 임시 치환
+            abbreviations.forEach((abbr) => {
+                const regex = new RegExp(`\\b(${abbr})\\.`, 'gi');
+                processed = processed.replace(regex, (match) => {
+                    const placeholder = `__ABBR${placeholderIdx++}__`;
+                    placeholders.push({ placeholder, original: match });
+                    return placeholder;
+                });
+            });
+            
+            // 숫자 + 마침표 (예: "1.", "2.3", 소수점) 치환
+            processed = processed.replace(/(\d+)\.(\d+)/g, (match) => {
+                const placeholder = `__DECIMAL${placeholderIdx++}__`;
+                placeholders.push({ placeholder, original: match });
+                return placeholder;
+            });
+            processed = processed.replace(/(\d+)\.\s*(?=[a-z])/gi, (match) => {
+                const placeholder = `__NUM${placeholderIdx++}__`;
+                placeholders.push({ placeholder, original: match });
+                return placeholder;
+            });
+            
+            // URL 치환
+            processed = processed.replace(/https?:\/\/[^\s]+/g, (match) => {
+                const placeholder = `__URL${placeholderIdx++}__`;
+                placeholders.push({ placeholder, original: match });
+                return placeholder;
+            });
+            
+            // 괄호 안 내용 보호 (마침표 포함된 괄호)
+            processed = processed.replace(/\([^)]*\.[^)]*\)/g, (match) => {
+                const placeholder = `__PAREN${placeholderIdx++}__`;
+                placeholders.push({ placeholder, original: match });
+                return placeholder;
+            });
+            
+            // 인용 번호 보호 [1], [1, 2], [1-3] 등
+            processed = processed.replace(/\[[^\]]+\]/g, (match) => {
+                const placeholder = `__CITE${placeholderIdx++}__`;
+                placeholders.push({ placeholder, original: match });
+                return placeholder;
+            });
+            
+            // 문장 분리: 마침표/느낌표/물음표 뒤에 공백 또는 대문자가 오는 경우
+            // 1) 기본: .!? 뒤에 공백이 있으면 분리
+            // 2) .!? 뒤에 바로 대문자가 오면 분리 (공백 없는 경우)
+            let sentences = [];
+            
+            // 먼저 공백 기준으로 분리
+            let parts = processed.split(/(?<=[.!?])\s+/);
+            
+            // 각 파트에서 .!? 뒤에 바로 대문자가 오는 경우 추가 분리
+            parts.forEach(part => {
+                // .!? 뒤에 바로 대문자가 오는 패턴 분리
+                const subParts = part.split(/(?<=[.!?])(?=[A-Z])/);
+                sentences.push(...subParts);
+            });
+            
+            // 빈 문장 제거
+            sentences = sentences.filter(s => s.trim());
+            
+            // 플레이스홀더 복원
+            return sentences.map(s => {
+                let restored = s;
+                placeholders.forEach(p => {
+                    restored = restored.replace(p.placeholder, p.original);
+                });
+                return restored.trim();
+            });
+        }
+
+        // Bionic Reading: bold first part of each word
+        function toBionicText(text) {
+            return text.replace(/\b([a-zA-Z]+)\b/g, (match) => {
+                if (match.length <= 1) return match;
+                const boldLen = Math.max(1, Math.ceil(match.length * 0.4));
+                const boldPart = match.slice(0, boldLen);
+                const lightPart = match.slice(boldLen);
+                return `<span class="bionic-bold">${boldPart}</span><span class="bionic-light">${lightPart}</span>`;
+            });
+        }
+        
+        // Pastel colors for semantic chunks
+        const CHUNK_COLORS = [
+            "#FFE4B5",  // Moccasin
+            "#B0E0E6",  // PowderBlue
+            "#DDA0DD",  // Plum
+            "#98FB98",  // PaleGreen
+            "#FFB6C1",  // LightPink
+            "#87CEEB",  // SkyBlue
+            "#F0E68C",  // Khaki
+            "#E6E6FA",  // Lavender
+        ];
+        
+        // Cache for chunked sentences
+        let sentenceChunks = {};
+        
+        // Fetch semantic chunks from server
+        async function fetchChunks(sentenceList) {
+            try {
+                const response = await fetch('http://localhost:8000/chunk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sentences: sentenceList })
+                });
+                if (!response.ok) throw new Error('Chunk API failed');
+                const data = await response.json();
+                return data.results;
+            } catch (e) {
+                console.error('Chunk fetch error:', e);
+                return null;
+            }
+        }
+        
+        // Format sentence with semantic chunks
+        function formatSentenceWithChunks(text, chunks) {
+            if (!chunks || chunks.length === 0) {
+                return toBionicText(text);
+            }
+            
+            return chunks.map((chunk, i) => {
+                const color = CHUNK_COLORS[i % CHUNK_COLORS.length];
+                const bionicText = toBionicText(chunk.text);
+                return `<span class="semantic-chunk" style="background-color: ${color};">${bionicText}</span>`;
+            }).join(' ');
+        }
+        
+        // Apply bionic text to sentence (fallback)
+        function formatSentence(text) {
+            return toBionicText(text);
+        }
+        
+        async function renderSentences() {
+            const container = document.getElementById('paragraph-content');
+            if (!sentences.length) {
+                container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">👆</div>PDF에서 문단을 클릭하세요</div>`;
+                clearSentenceOverlays();
+                return;
+            }
+
+            // First render with basic bionic (fast)
+            container.innerHTML = sentences.map((s, i) =>
+                `<span class="sentence${i === sentenceIndex ? ' active' : ''}" data-idx="${i}">${formatSentence(s)}</span>`
+            ).join(' ');
+
+            attachSentenceClickHandlers();
+            scrollToSentence();
+            renderSentenceOverlay();
+            
+            // Then fetch chunks and re-render active sentence with semantic highlighting
+            await updateActiveSentenceChunks();
+        }
+        
+        function attachSentenceClickHandlers() {
+            document.querySelectorAll('#paragraph-content .sentence').forEach(el => {
+                el.onclick = async () => {
+                    sentenceIndex = parseInt(el.dataset.idx);
+                    highlightSentence();
+                    await updateActiveSentenceChunks();
+                };
+            });
+        }
+        
+        async function updateActiveSentenceChunks() {
+            if (!sentences[sentenceIndex]) return;
+            
+            const sentence = sentences[sentenceIndex];
+            const cacheKey = sentence.substring(0, 50);  // Use first 50 chars as key
+            
+            // Check cache
+            if (!sentenceChunks[cacheKey]) {
+                const results = await fetchChunks([sentence]);
+                if (results && results[0]) {
+                    sentenceChunks[cacheKey] = results[0].chunks;
+                }
+            }
+            
+            // Apply chunks to active sentence
+            const chunks = sentenceChunks[cacheKey];
+            if (chunks) {
+                const activeEl = document.querySelector('.sentence.active');
+                if (activeEl) {
+                    activeEl.innerHTML = formatSentenceWithChunks(sentence, chunks);
+                }
+            }
+        }
+        
+        async function highlightSentence() {
+            document.querySelectorAll('.sentence').forEach((el, i) => {
+                el.classList.toggle('active', i === sentenceIndex);
+                // Reset non-active sentences to basic bionic
+                if (i !== sentenceIndex && sentences[i]) {
+                    el.innerHTML = formatSentence(sentences[i]);
+                }
+            });
+            scrollToSentence();
+            renderSentenceOverlay();
+        }
+        
+        function clearSentenceOverlays() {
+            document.querySelectorAll('.sentence-block').forEach(el => el.remove());
+        }
+        
+        function renderSentenceOverlay() {
+            clearSentenceOverlays();
+            
+            if (!selectedParagraph || !selectedParagraph.sentences) return;
+            
+            const sentData = selectedParagraph.sentences[sentenceIndex];
+            if (!sentData || !sentData.bboxes) return;
+            
+            const scale = pdfScale;
+            
+            for (const bbox of sentData.bboxes) {
+                const pageNum = bbox.page || bbox.pageNum;
+                const pageContainer = document.querySelector(`.pdf-page[data-page="${pageNum}"]`);
+                if (!pageContainer) continue;
+                
+                const layer = pageContainer.querySelector('.paragraph-layer');
+                if (!layer) continue;
+                
+                const block = document.createElement('div');
+                block.className = 'sentence-block active';
+                block.style.left = `${bbox.x * scale}px`;
+                block.style.top = `${bbox.y * scale}px`;
+                block.style.width = `${bbox.width * scale}px`;
+                block.style.height = `${bbox.height * scale}px`;
+                layer.appendChild(block);
+            }
+            
+            // 문장 블록이 보이도록 스크롤
+            const activeBlock = document.querySelector('.sentence-block.active');
+            if (activeBlock) {
+                const container = document.getElementById('pdf-container');
+                const blockRect = activeBlock.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                
+                // 블록이 화면에 없으면 스크롤
+                if (blockRect.top < containerRect.top || blockRect.bottom > containerRect.bottom) {
+                    const scrollTop = container.scrollTop + (blockRect.top - containerRect.top) - (containerRect.height / 3);
+                    container.scrollTo({ top: scrollTop, behavior: 'smooth' });
+                }
+            }
+        }
+
+        function scrollToSentence() {
+            document.querySelector('.sentence.active')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // ========== Notes ==========
+        function switchTab(tab) {
+            document.querySelectorAll('.panel-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${tab}`));
+            
+            if (tab === 'notes') {
+                renderAllNotes();
+            }
+        }
+
+        function renderAllNotes() {
+            const container = document.getElementById('all-notes-content');
+            if (!currentPaper) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><div>논문을 먼저 열어주세요</div></div>';
+                return;
+            }
+
+            const notesWithPara = [];
+            for (const section of currentPaper.sections) {
+                for (const para of section.paragraphs) {
+                    const note = currentPaper.getNote(para.id);
+                    if (note && note.trim()) {
+                        notesWithPara.push({ section, para, note });
+                    }
+                }
+            }
+
+            if (notesWithPara.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><div>아직 작성된 노트가 없습니다</div></div>';
+                return;
+            }
+
+            container.innerHTML = notesWithPara.map(({ section, para, note }) => `
+                <div class="note-card" onclick="goToParagraph('${para.id}')">
+                    <div class="note-card-header">
+                        <span class="note-card-section">${section.title}</span>
+                        <span class="note-card-page">Page ${para.pageNum}</span>
+                    </div>
+                    <div class="note-card-text">${para.text.substring(0, 100)}...</div>
+                    <div class="note-card-note">${note}</div>
+                </div>
+            `).join('');
+        }
+
+        function goToParagraph(paraId) {
+            if (!currentPaper) return;
+            for (const section of currentPaper.sections) {
+                const para = section.paragraphs.find(p => p.id === paraId);
+                if (para) {
+                    switchTab('reader');
+                    selectParagraphAndScroll(section, para);
+                    return;
+                }
+            }
+        }
+
+        function exportNotes() {
+            if (!currentPaper) return;
+
+            let markdown = `# ${currentPaper.title}\n\n`;
+            if (currentPaper.authors) {
+                markdown += `**Authors:** ${currentPaper.authors}\n\n`;
+            }
+            markdown += `---\n\n`;
+
+            for (const section of currentPaper.sections) {
+                const sectionNotes = section.paragraphs
+                    .map(p => ({ para: p, note: currentPaper.getNote(p.id) }))
+                    .filter(x => x.note && x.note.trim());
+
+                if (sectionNotes.length > 0) {
+                    markdown += `## ${section.title}\n\n`;
+                    for (const { para, note } of sectionNotes) {
+                        markdown += `> ${para.text.substring(0, 150)}...\n\n`;
+                        markdown += `${note}\n\n`;
+                        markdown += `---\n\n`;
+                    }
+                }
+            }
+
+            // 다운로드
+            const blob = new Blob([markdown], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentPaper.title.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_')}_notes.md`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        async function saveNote() {
+            const ta = document.getElementById('notes-textarea');
+            const paraId = ta.dataset.paraId;
+            if (paraId && currentPaper) {
+                currentPaper.setNote(paraId, ta.value);
+                await dbPut('papers', currentPaper.toJSON());
+            }
+        }
+
+        // ========== Zoom ==========
+        async function zoomIn() { 
+            currentScale = Math.min(currentScale + 0.2, 4); 
+            updateZoom(); 
+            await rerenderPages();
+        }
+        async function zoomOut() { 
+            currentScale = Math.max(currentScale - 0.2, 0.3); 
+            updateZoom(); 
+            await rerenderPages();
+        }
+        async function zoomFit() { 
+            currentScale = baseScale; 
+            updateZoom(); 
+            await rerenderPages();
+        }
+        function updateZoom() { 
+            document.getElementById('zoom-display').textContent = Math.round(currentScale * 100) + '%'; 
+        }
+        
+        // 줌 시 재렌더링 (sections 유지)
+        async function rerenderPages() {
+            const container = document.getElementById('pdf-container');
+            container.innerHTML = '';
+            const dpr = window.devicePixelRatio || 2;
+            
+            for (let num = 1; num <= pdfDoc.numPages; num++) {
+                const page = await pdfDoc.getPage(num);
+                const vp = page.getViewport({ scale: currentScale });
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'pdf-page';
+                wrapper.dataset.page = num;
+                wrapper.style.width = vp.width + 'px';
+                wrapper.style.height = vp.height + 'px';
+
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.width = vp.width * dpr;
+                canvas.height = vp.height * dpr;
+                canvas.style.width = vp.width + 'px';
+                canvas.style.height = vp.height + 'px';
+                ctx.scale(dpr, dpr);
+                wrapper.appendChild(canvas);
+
+                // Paragraph overlay
+                const paraLayer = document.createElement('div');
+                paraLayer.className = 'paragraph-layer';
+
+                if (currentPaper) {
+                    for (const section of currentPaper.sections) {
+                        for (const para of section.paragraphs) {
+                            // Grobid 모드에서는 bounds가 없음 - 스킵
+                            if (!para.bounds) continue;
+                            if (para.pageNum !== num) continue;
+
+                            const block = document.createElement('div');
+                            block.className = 'paragraph-block' + (para.isHeading ? ' is-heading' : '');
+                            block.style.left = (para.bounds.x * currentScale) + 'px';
+                            block.style.top = (para.bounds.y * currentScale) + 'px';
+                            block.style.width = (para.bounds.w * currentScale) + 'px';
+                            block.style.height = (para.bounds.h * currentScale) + 'px';
+                            block.dataset.paraId = para.id;
+                            block.dataset.debug = para.id;
+
+                            paraLayer.appendChild(block);
+                        }
+                    }
+                }
+                wrapper.appendChild(paraLayer);
+
+                const textLayer = document.createElement('div');
+                textLayer.className = 'textLayer';
+                textLayer.style.width = vp.width + 'px';
+                textLayer.style.height = vp.height + 'px';
+                textLayer.style.setProperty('--scale-factor', String(currentScale));
+                wrapper.appendChild(textLayer);
+
+                wrapper.addEventListener('dblclick', (e) => {
+                    const rect = wrapper.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const result = findParagraphAtPosition(num, x, y);
+                    if (result) selectParagraph(result.section, result.paragraph);
+                });
+
+                container.appendChild(wrapper);
+
+                await page.render({ canvasContext: ctx, viewport: vp }).promise;
+                const textContent = await page.getTextContent();
+                await pdfjsLib.renderTextLayer({
+                    textContentSource: textContent,
+                    container: textLayer,
+                    viewport: vp,
+                    textDivs: []
+                }).promise;
+            }
+
+            container.removeEventListener('mouseup', handleTextSelection);
+            container.addEventListener('mouseup', handleTextSelection);
+            
+            if (debugMode) {
+                container.classList.add('debug-mode');
+            }
+        }
+
+        // ========== Chat ==========
+        const TRANSLATE_PROMPT = `너는 최신 AI기술을 다 아는 전문가야. 영어 논문들을 친구한테 말하듯이 반말로해줘 AI에서 많이 쓰이는 영단어들은 한국말로 번역하지마 주로 조사나 문장구조만 한국어로해. 예를들어 annotator는 번역하지말고 annotator라고하고 모델도 걍 model, 데이터도 data. 이런식으로 번역해. Our data collection approach can be divided based on the post-training method, i.e., SFT or preference tuning. 이걸 예를어 다음과 같이 번역해 우리의 data collection approach는 post-training method 즉 SFT 또는 preference tuning에 따라 나뉠수있다. 이런식으로... 알겠지? 그리고 불릿포인트로 보기좋게 정리해서 보여줘. 시킨거말고는 하지마. 뭘 해줄까? 이런거 묻지마.`;
+
+        async function translateParagraph() {
+            if (!selectedParagraph) {
+                alert('먼저 문단을 선택해주세요.');
+                return;
+            }
+            if (!apiKey) {
+                alert('API 키를 먼저 설정해주세요.');
+                showModal('api-modal');
+                return;
+            }
+
+            const btn = document.getElementById('translate-btn');
+            const textarea = document.getElementById('notes-textarea');
+            
+            btn.disabled = true;
+            btn.classList.add('loading');
+            btn.textContent = '⏳ 번역 중...';
+
+            try {
+                const res = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01',
+                        'anthropic-dangerous-direct-browser-access': 'true'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 2048,
+                        messages: [{
+                            role: 'user',
+                            content: TRANSLATE_PROMPT + '\n\n다음 문단을 번역해:\n\n' + selectedParagraph.text
+                        }]
+                    })
+                });
+
+                if (!res.ok) throw new Error('API 오류: ' + res.status);
+                const data = await res.json();
+                const translation = data.content[0].text;
+
+                // 노트에 append
+                const currentNote = textarea.value;
+                const separator = currentNote.trim() ? '\n\n---\n\n' : '';
+                const newNote = currentNote + separator + '🤓 번역:\n' + translation;
+                
+                textarea.value = newNote;
+                await saveNote();
+
+                // 성공 피드백
+                btn.textContent = '✅ 완료!';
+                setTimeout(() => {
+                    btn.textContent = '🤓 번역하기';
+                }, 1500);
+
+            } catch (err) {
+                console.error('Translation error:', err);
+                alert('번역 오류: ' + err.message);
+                btn.textContent = '🤓 번역하기';
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+            }
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            addChat('user', msg);
+            input.value = '';
+
+            if (!apiKey) { addChat('assistant', 'API 키를 먼저 설정하세요.'); return; }
+
+            try {
+                const res = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01',
+                        'anthropic-dangerous-direct-browser-access': 'true'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 1024,
+                        system: '논문 읽기 도와주는 AI야. 반말로 간결하게 핵심만 답해.',
+                        messages: [{ role: 'user', content: msg }]
+                    })
+                });
+                if (!res.ok) throw new Error('API 오류: ' + res.status);
+                const data = await res.json();
+                addChat('assistant', data.content[0].text);
+            } catch (err) {
+                addChat('assistant', '오류: ' + err.message);
+            }
+        }
+
+        function addChat(role, text) {
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = 'chat-message ' + role;
+            div.innerHTML = text.replace(/\n/g, '<br>');
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // ========== Modal ==========
+        function showModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function saveApiKey() {
+            apiKey = document.getElementById('api-key-input').value.trim();
+            localStorage.setItem('claude_api_key', apiKey);
+            closeModal('api-modal');
+        }
+        
+        // ========== Collapsible Sections ==========
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const isCollapsing = !section.classList.contains('collapsed');
+            
+            const allSections = ['paragraph-section', 'notes-section', 'chat-section'];
+            const otherSections = allSections.filter(id => id !== sectionId);
+            
+            if (isCollapsing) {
+                // 접으려고 할 때: 다른 섹션 중 하나라도 펼쳐져 있는지 확인
+                const hasExpandedOther = otherSections.some(id => {
+                    const el = document.getElementById(id);
+                    return el && !el.classList.contains('collapsed');
+                });
+                
+                if (!hasExpandedOther) {
+                    // 모든 다른 섹션이 접혀있으면, 첫 번째로 접힌 다른 섹션을 펼침
+                    for (const otherId of otherSections) {
+                        const otherEl = document.getElementById(otherId);
+                        if (otherEl && otherEl.classList.contains('collapsed')) {
+                            otherEl.classList.remove('collapsed');
+                            otherEl.style.height = '';
+                            otherEl.style.flex = '';
+                            // 상태 저장
+                            const collapsed = JSON.parse(localStorage.getItem('collapsedSections') || '{}');
+                            collapsed[otherId] = false;
+                            localStorage.setItem('collapsedSections', JSON.stringify(collapsed));
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            section.classList.toggle('collapsed');
+            section.style.height = '';
+            section.style.flex = '';
+            
+            // 상태 저장
+            const collapsed = JSON.parse(localStorage.getItem('collapsedSections') || '{}');
+            collapsed[sectionId] = section.classList.contains('collapsed');
+            localStorage.setItem('collapsedSections', JSON.stringify(collapsed));
+        }
+        
+        // 저장된 collapse 상태 복원
+        function restoreCollapsedState() {
+            const collapsed = JSON.parse(localStorage.getItem('collapsedSections') || '{}');
+            Object.keys(collapsed).forEach(id => {
+                if (collapsed[id]) {
+                    document.getElementById(id)?.classList.add('collapsed');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

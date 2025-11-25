@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+dist/
+out/
+
+# Build outputs
+*.dmg
+*.exe
+*.AppImage
+*.deb
+*.rpm
+*.zip
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.so
+.env
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test PDFs (optional - you may want to keep sample PDFs)
+# *.pdf
+
+# Electron Builder cache
+.cache/
