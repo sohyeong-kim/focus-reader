@@ -3,201 +3,105 @@
   
   # Focus Reader 📚🧠
   
-  **ADHD-friendly research paper reader with semantic chunking and Bionic Reading**
+  **ADHD를 위한 논문 리더**
   
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue)]()
+  문장을 의미 단위로 쪼개서 색깔로 보여주고, Bionic Reading으로 읽기 쉽게 해줘요!
 </div>
 
 ---
 
-## ✨ Features
+## 🚀 설치 방법 (Mac 기준)
 
-### 🎯 ADHD-Friendly Reading
-- **Semantic Chunking**: Sentences are automatically split into meaningful chunks with color-coded highlights
-- **Bionic Reading**: First part of each word is bolded to guide your eyes naturally
-- **Sentence-by-sentence navigation**: Focus on one sentence at a time with keyboard shortcuts
+### 1단계: Docker Desktop 설치
 
-### 📄 PDF Intelligence
-- **Grobid ML Parser**: Advanced PDF parsing that understands paper structure
-- **Click-to-read**: Click any paragraph in the PDF to start reading
-- **Multi-column support**: Works with two-column academic papers
-- **Section browser**: Navigate by paper sections
+1. https://www.docker.com/products/docker-desktop/ 접속
+2. **"Download for Mac"** 클릭해서 다운로드
+3. 다운받은 파일 실행해서 설치
+4. 설치 후 Docker Desktop 앱 실행 (고래 아이콘 🐳)
 
-### 🤖 AI Assistant
-- **Claude Integration**: Chat with Claude about the paper you're reading
-- **Context-aware**: AI knows which paragraph you're focusing on
+### 2단계: Grobid 실행 (PDF 파싱용)
 
-### 📝 Note Taking
-- **Per-paper notes**: Notes are saved for each paper automatically
-- **Persistent storage**: Your notes survive app restarts
-
----
-
-## 🖼️ Screenshots
-
-<div align="center">
-  <img src="docs/screenshot-main.png" width="800" alt="Main Interface">
-  <p><em>Main reading interface with semantic chunking</em></p>
-</div>
-
----
-
-## 🚀 Installation
-
-### Prerequisites
-
-1. **Docker** (for Grobid PDF parser)
-   ```bash
-   # Install Docker Desktop from https://docker.com
-   ```
-
-2. **Python 3.10+** with packages:
-   ```bash
-   pip install fastapi uvicorn httpx spacy
-   python -m spacy download en_core_web_sm
-   ```
-
-3. **Node.js 18+** (for development)
-   ```bash
-   # Install from https://nodejs.org
-   ```
-
-### Quick Start
-
-1. **Start Grobid** (PDF parser):
-   ```bash
-   # First time - download and run (takes a few minutes)
-   docker run -d --name grobid --restart=always -p 8070:8070 lfoppiano/grobid:0.8.0
-   ```
-   
-   > 💡 **Docker Tips:**
-   > - `--restart=always` makes Grobid start automatically when your computer boots
-   > - Check if running: `docker ps`
-   > - If stopped, restart with: `docker start grobid`
-   > - Stop it: `docker stop grobid`
-
-2. **Clone and install**:
-   ```bash
-   git clone https://github.com/thgud1624/focus-reader.git
-   cd focus-reader
-   npm install
-   ```
-
-3. **Run the app**:
-   ```bash
-   npm start
-   ```
-
-### Download Pre-built App
-
-> Coming soon! Check the [Releases](https://github.com/thgud1624/focus-reader/releases) page.
-
----
-
-## 🎮 Usage
-
-### Keyboard Shortcuts
-
-| Key | Action |
-|-----|--------|
-| `←` / `↑` | Previous sentence |
-| `→` / `↓` | Next sentence |
-| Click PDF | Select paragraph |
-
-### Reading Flow
-
-1. **Open a PDF**: Click the file input or drag & drop
-2. **Wait for parsing**: Grobid analyzes the paper structure
-3. **Click a paragraph**: The text appears in the right panel
-4. **Navigate sentences**: Use arrow keys to move through sentences
-5. **Take notes**: Write notes in the Notes section
-6. **Ask Claude**: Chat with AI about what you're reading
-
----
-
-## 🛠️ Development
-
-### Project Structure
-
-```
-focus-reader/
-├── main.js              # Electron main process
-├── preload.js           # Electron preload script
-├── focusread-v5.html    # Main app (single HTML file)
-├── server_grobid_v2.py  # Python backend (Grobid + spaCy)
-├── assets/
-│   ├── icon.svg         # App icon source
-│   ├── icon.png         # PNG icon
-│   └── icon.icns        # macOS icon
-└── package.json
-```
-
-### Building
+터미널 열고 (Spotlight에서 "터미널" 검색):
 
 ```bash
-# Build for current platform
-npm run build
-
-# Build for specific platform
-npm run build:mac
-npm run build:win
-npm run build:linux
+docker run -d --name grobid --restart=always -p 8070:8070 lfoppiano/grobid:0.8.0
 ```
 
-### Tech Stack
+> ⏳ 처음엔 다운로드 때문에 몇 분 걸려요. 기다리세요!
+> 
+> ✅ 완료되면 \`docker ps\` 치면 grobid가 보여요.
 
-- **Frontend**: Vanilla JS, PDF.js, HTML/CSS
-- **Backend**: FastAPI, spaCy (NLP), Grobid (PDF parsing)
-- **Desktop**: Electron
-- **AI**: Claude API (Anthropic)
+### 3단계: Python 패키지 설치
 
----
+터미널에서:
 
-## 🤝 Contributing
+```bash
+pip3 install fastapi uvicorn httpx spacy
+python3 -m spacy download en_core_web_sm
+```
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+### 4단계: Node.js 설치
 
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1. https://nodejs.org/ 접속
+2. **LTS 버전** 다운로드 & 설치
 
----
+### 5단계: Focus Reader 다운로드 & 실행
 
-## 📋 Requirements
+터미널에서:
 
-### System Requirements
-- macOS 10.15+ / Windows 10+ / Ubuntu 20.04+
-- 4GB RAM minimum
-- 500MB disk space
-
-### Runtime Dependencies
-- Docker (for Grobid)
-- Python 3.10+
-- Internet connection (for Claude AI)
+```bash
+git clone https://github.com/thgud1624/focus-reader.git
+cd focus-reader
+npm install
+npm start
+```
 
 ---
 
-## 📄 License
+## 🎮 사용법
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🙏 Acknowledgments
-
-- [Grobid](https://github.com/kermitt2/grobid) - Machine learning PDF parser
-- [spaCy](https://spacy.io/) - Industrial-strength NLP
-- [PDF.js](https://mozilla.github.io/pdf.js/) - PDF rendering
-- [Bionic Reading](https://bionic-reading.com/) - Reading technique inspiration
-- [Anthropic Claude](https://anthropic.com/) - AI assistant
+1. **PDF 열기**: 앱에서 PDF 파일 선택
+2. **문단 클릭**: PDF에서 읽고싶은 문단 클릭
+3. **문장 이동**: 방향키 \`←\` \`→\` 또는 \`↑\` \`↓\`로 문장 이동
 
 ---
 
-<div align="center">
-  Made with ❤️ for people with ADHD
-  
-  **Focus on what matters. One sentence at a time.**
-</div>
+## ❓ 문제 해결
+
+### "docker: command not found"
+→ Docker Desktop이 설치 안 됨. 1단계부터 다시!
+
+### "pip3: command not found"  
+→ Python 설치 필요. https://www.python.org/downloads/ 에서 설치
+
+### "npm: command not found"
+→ Node.js 설치 필요. 4단계 다시!
+
+### Grobid가 안 돌아요
+```bash
+docker start grobid
+```
+
+### 앱이 PDF를 못 읽어요
+→ Grobid가 실행 중인지 확인:
+```bash
+docker ps
+```
+grobid가 안 보이면 2단계 다시!
+
+---
+
+## 🔄 매일 사용할 때
+
+1. **Docker Desktop 실행** (고래 아이콘)
+2. 터미널에서:
+```bash
+cd focus-reader
+npm start
+```
+
+> 💡 Grobid는 \`--restart=always\` 옵션 덕분에 Docker 켜면 자동 실행돼요!
+
+---
+
+Made with ❤️ for ADHD
