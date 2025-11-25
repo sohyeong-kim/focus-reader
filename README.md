@@ -10,42 +10,58 @@
 
 ---
 
-## 🚀 설치 방법 (Mac 기준)
+## 🚀 설치 방법 (Mac)
 
-### 1단계: Docker Desktop 설치
+### 방법 1: DMG 파일로 설치 (쉬움)
 
+#### 1단계: 필수 프로그램 설치
+
+**Docker Desktop 설치:**
 1. https://www.docker.com/products/docker-desktop/ 접속
-2. **"Download for Mac"** 클릭해서 다운로드
-3. 다운받은 파일 실행해서 설치
-4. 설치 후 Docker Desktop 앱 실행 (고래 아이콘 🐳)
+2. **"Download for Mac"** 클릭 → 다운로드
+3. 다운받은 파일 더블클릭해서 설치
+4. Applications에서 **Docker** 실행 (고래 아이콘 🐳)
+5. Docker가 완전히 켜질 때까지 기다리기 (상단바에 고래가 움직임 멈추면 OK)
 
-### 2단계: Grobid 실행 (PDF 파싱용)
+**Python 패키지 설치:**
 
-터미널 열고 (Spotlight에서 "터미널" 검색):
-
-```bash
-docker run -d --name grobid --restart=always -p 8070:8070 lfoppiano/grobid:0.8.0
-```
-
-> ⏳ 처음엔 다운로드 때문에 몇 분 걸려요. 기다리세요!
-> 
-> ✅ 완료되면 \`docker ps\` 치면 grobid가 보여요.
-
-### 3단계: Python 패키지 설치
-
-터미널에서:
+터미널 열고 (Spotlight에서 "터미널" 검색) 아래 복붙:
 
 ```bash
 pip3 install fastapi uvicorn httpx spacy
 python3 -m spacy download en_core_web_sm
 ```
 
-### 4단계: Node.js 설치
+**Grobid 실행:**
 
+터미널에서:
+
+```bash
+docker run -d --name grobid --restart=always -p 8070:8070 lfoppiano/grobid:0.8.0
+```
+
+> ⏳ 처음엔 다운로드 때문에 5~10분 걸려요!
+
+#### 2단계: Focus Reader 설치
+
+1. [Releases](https://github.com/thgud1624/focus-reader/releases)에서 **Focus Reader.dmg** 다운로드
+2. DMG 파일 더블클릭
+3. Focus Reader 앱을 **Applications** 폴더로 드래그
+4. Applications에서 Focus Reader 실행!
+
+---
+
+### 방법 2: 소스코드로 설치 (개발자용)
+
+#### 1단계: 필수 프로그램
+
+위 방법 1의 "필수 프로그램 설치" 똑같이 하고,
+
+**추가로 Node.js 설치:**
 1. https://nodejs.org/ 접속
 2. **LTS 버전** 다운로드 & 설치
 
-### 5단계: Focus Reader 다운로드 & 실행
+#### 2단계: 다운로드 & 실행
 
 터미널에서:
 
@@ -62,45 +78,37 @@ npm start
 
 1. **PDF 열기**: 앱에서 PDF 파일 선택
 2. **문단 클릭**: PDF에서 읽고싶은 문단 클릭
-3. **문장 이동**: 방향키 \`←\` \`→\` 또는 \`↑\` \`↓\`로 문장 이동
+3. **문장 이동**: 방향키 `←` `→` 또는 `↑` `↓`
 
 ---
 
 ## ❓ 문제 해결
 
+### 앱이 안 열려요 / "손상된 앱" 경고
+```bash
+xattr -cr /Applications/Focus\ Reader.app
+```
+터미널에 위 명령어 치고 다시 열기
+
 ### "docker: command not found"
-→ Docker Desktop이 설치 안 됨. 1단계부터 다시!
+→ Docker Desktop 설치 안 됨 / 안 켜짐
 
-### "pip3: command not found"  
-→ Python 설치 필요. https://www.python.org/downloads/ 에서 설치
+### "pip3: command not found"
+→ Python 설치: https://www.python.org/downloads/
 
-### "npm: command not found"
-→ Node.js 설치 필요. 4단계 다시!
-
-### Grobid가 안 돌아요
-```bash
-docker start grobid
-```
-
-### 앱이 PDF를 못 읽어요
-→ Grobid가 실행 중인지 확인:
-```bash
-docker ps
-```
-grobid가 안 보이면 2단계 다시!
+### PDF 파싱이 안 돼요
+→ Docker Desktop이 켜져있는지 확인 (고래 아이콘 🐳)
+→ Grobid 확인: `docker ps` 쳤을 때 grobid 보여야 함
+→ 안 보이면: `docker start grobid`
 
 ---
 
 ## 🔄 매일 사용할 때
 
 1. **Docker Desktop 실행** (고래 아이콘)
-2. 터미널에서:
-```bash
-cd focus-reader
-npm start
-```
+2. **Focus Reader 실행**
 
-> 💡 Grobid는 \`--restart=always\` 옵션 덕분에 Docker 켜면 자동 실행돼요!
+> 💡 Grobid는 Docker 켜면 자동 실행돼요!
 
 ---
 
