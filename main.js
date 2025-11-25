@@ -27,10 +27,10 @@ function createWindow() {
   // Load the HTML file
   mainWindow.loadFile('focusread-v5.html');
 
-  // Open DevTools in development
-  if (isDev) {
-    mainWindow.webContents.openDevTools();
-  }
+  // DevTools는 기본적으로 끄기 (필요하면 Cmd+Option+I로 열기)
+  // if (isDev) {
+  //   mainWindow.webContents.openDevTools();
+  // }
 
   mainWindow.on('closed', () => {
     mainWindow = null;
