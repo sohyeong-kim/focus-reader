@@ -142,4 +142,26 @@ xattr -cr /Applications/Focus\ Reader.app
 
 ---
 
+## ☕ Support
+
+이 프로젝트가 도움이 되셨다면 커피 한 잔 사주세요!
+
+<a href="https://buymeacoffee.com/YOUR_USERNAME" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50">
+</a>
+
+- 무료로 사용하셔도 됩니다!
+- 후원은 개발 동기 부여가 됩니다 🙏
+
+---
+
+## 📜 License
+
+This project is proprietary software. See [LICENSE](LICENSE) for details.
+
+- ✅ 개인 비상업적 사용 허용
+- ❌ 상업적 사용, 수정, 재배포 금지
+
+---
+
 Made with ❤️ for ADHD
