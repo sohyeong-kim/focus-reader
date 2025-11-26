@@ -1514,6 +1514,254 @@
             animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Pomodoro Styles */
+        .pomodoro-section {
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+        }
+        .pomodoro-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .pomodoro-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .pomodoro-settings-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px;
+            border-radius: 4px;
+        }
+        .pomodoro-settings-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+        .pomodoro-tomatoes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            min-height: 28px;
+        }
+        .pomodoro-tomato {
+            font-size: 20px;
+            animation: popIn 0.3s ease-out;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .pomodoro-empty {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* Pomodoro Timer in Reader */
+        .pomodoro-timer-widget {
+            position: fixed;
+            top: 60px;
+            right: 420px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .pomodoro-timer-display {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            min-width: 70px;
+            text-align: center;
+        }
+        .pomodoro-timer-display.focus { color: #ef4444; }
+        .pomodoro-timer-display.break { color: var(--accent-green); }
+        .pomodoro-timer-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        .pomodoro-timer-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: var(--accent-blue);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+        .pomodoro-timer-btn:hover { transform: scale(1.1); }
+        .pomodoro-timer-btn.pause { background: var(--accent-orange); }
+        .pomodoro-timer-btn.stop { background: var(--text-muted); font-size: 12px; }
+
+        /* Pomodoro Animation Overlay */
+        .pomodoro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .pomodoro-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .pomodoro-animation {
+            width: 300px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .pomodoro-dog {
+            font-size: 120px;
+            animation: bounce 0.5s ease infinite alternate;
+        }
+        .pomodoro-tomatoes-juggle {
+            position: absolute;
+            font-size: 50px;
+        }
+        .pomodoro-tomato-1 { animation: juggle1 1s ease-in-out infinite; }
+        .pomodoro-tomato-2 { animation: juggle2 1s ease-in-out infinite 0.33s; }
+        .pomodoro-tomato-3 { animation: juggle3 1s ease-in-out infinite 0.66s; }
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-15px); }
+        }
+        @keyframes juggle1 {
+            0%, 100% { transform: translate(-80px, 0); }
+            50% { transform: translate(-80px, -120px); }
+        }
+        @keyframes juggle2 {
+            0%, 100% { transform: translate(0, -60px); }
+            50% { transform: translate(0, -180px); }
+        }
+        @keyframes juggle3 {
+            0%, 100% { transform: translate(80px, 0); }
+            50% { transform: translate(80px, -120px); }
+        }
+        .pomodoro-dog-sleeping {
+            font-size: 120px;
+            animation: sleep 2s ease infinite;
+        }
+        @keyframes sleep {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+        .pomodoro-zzz {
+            position: absolute;
+            font-size: 40px;
+            animation: zzz 1.5s ease-in-out infinite;
+            top: -30px;
+            right: -30px;
+        }
+        @keyframes zzz {
+            0%, 100% { opacity: 0.3; transform: translateY(0) scale(0.8); }
+            50% { opacity: 1; transform: translateY(-20px) scale(1.2); }
+        }
+        .pomodoro-wakeup {
+            font-size: 120px;
+            animation: wakeup 0.5s ease forwards;
+        }
+        @keyframes wakeup {
+            0% { transform: rotate(-10deg) scale(0.9); }
+            50% { transform: rotate(10deg) scale(1.1); }
+            100% { transform: rotate(0) scale(1); }
+        }
+        .pomodoro-message {
+            font-size: 24px;
+            font-weight: 600;
+            color: white;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .pomodoro-sub-message {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            margin-top: 8px;
+        }
+        .pomodoro-overlay-btn {
+            margin-top: 30px;
+            padding: 12px 32px;
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        .pomodoro-overlay-btn:hover { transform: scale(1.05); }
+        .pomodoro-overlay-btn.break-btn {
+            background: var(--accent-green);
+            color: white;
+        }
+        .pomodoro-overlay-btn.focus-btn {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        /* Pomodoro Settings Modal */
+        .pomodoro-settings-content {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .pomodoro-setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .pomodoro-setting-label {
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+        .pomodoro-setting-input {
+            width: 80px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            text-align: center;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        .pomodoro-setting-unit {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-left: 8px;
+        }
     </style>
 </head>
 <body>
@@ -1557,6 +1805,51 @@
         </div>
     </div>
 
+    <!-- Pomodoro Settings Modal -->
+    <div class="modal-overlay" id="pomodoro-settings-modal">
+        <div class="modal">
+            <div class="modal-title">🍅 뽀모도로 설정</div>
+            <div class="pomodoro-settings-content">
+                <div class="pomodoro-setting-row">
+                    <span class="pomodoro-setting-label">집중 시간</span>
+                    <div>
+                        <input type="number" class="pomodoro-setting-input" id="pomodoro-focus-time" min="1" max="120" value="25">
+                        <span class="pomodoro-setting-unit">분</span>
+                    </div>
+                </div>
+                <div class="pomodoro-setting-row">
+                    <span class="pomodoro-setting-label">휴식 시간</span>
+                    <div>
+                        <input type="number" class="pomodoro-setting-input" id="pomodoro-break-time" min="1" max="60" value="5">
+                        <span class="pomodoro-setting-unit">분</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" onclick="closeModal('pomodoro-settings-modal')">취소</button>
+                <button class="btn btn-primary" onclick="savePomodoroSettings()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pomodoro Timer Widget (for Reader View) -->
+    <div class="pomodoro-timer-widget" id="pomodoro-timer-widget" style="display:none;">
+        <div>
+            <div class="pomodoro-timer-label" id="pomodoro-timer-label">집중</div>
+            <div class="pomodoro-timer-display focus" id="pomodoro-timer-display">25:00</div>
+        </div>
+        <button class="pomodoro-timer-btn" id="pomodoro-play-btn" onclick="togglePomodoro()">▶</button>
+        <button class="pomodoro-timer-btn stop" id="pomodoro-stop-btn" onclick="stopPomodoro()" style="display:none;">■</button>
+    </div>
+
+    <!-- Pomodoro Animation Overlay -->
+    <div class="pomodoro-overlay" id="pomodoro-overlay">
+        <div class="pomodoro-animation" id="pomodoro-animation"></div>
+        <div class="pomodoro-message" id="pomodoro-message"></div>
+        <div class="pomodoro-sub-message" id="pomodoro-sub-message"></div>
+        <button class="pomodoro-overlay-btn" id="pomodoro-overlay-btn" onclick="handlePomodoroOverlayClick()"></button>
+    </div>
+
     <div class="drop-zone" id="drop-zone">
         <div class="drop-zone-content">
             <div class="drop-zone-icon">📄</div>
@@ -1589,6 +1882,17 @@
             <div class="sidebar-section-title">폴더</div>
             <div id="folder-list"></div>
             <button class="add-folder-btn" onclick="showModal('folder-modal')">➕ 새 폴더</button>
+
+            <!-- Pomodoro Section -->
+            <div class="pomodoro-section">
+                <div class="pomodoro-header">
+                    <span class="pomodoro-title">🍅 오늘의 뽀모도로</span>
+                    <button class="pomodoro-settings-btn" onclick="showModal('pomodoro-settings-modal')" title="설정">⚙️</button>
+                </div>
+                <div class="pomodoro-tomatoes" id="pomodoro-tomatoes">
+                    <span class="pomodoro-empty">아직 완료한 세션이 없어요</span>
+                </div>
+            </div>
         </div>
 
         <div class="library-main">
@@ -1626,6 +1930,7 @@
                 <button class="btn" onclick="zoomFit()">맞춤</button>
                 <span id="parse-status" style="margin-left: 12px; font-size: 11px; padding: 4px 8px; border-radius: 4px; background: var(--bg-tertiary);"></span>
                 <button class="btn" id="debug-btn" onclick="toggleDebug()">🐛 Debug</button>
+                <button class="btn" id="pomodoro-start-btn" onclick="showPomodoroTimer()" style="margin-left: auto;">🍅 뽀모도로</button>
             </div>
             <div class="pdf-container" id="pdf-container"></div>
         </div>
@@ -2540,6 +2845,60 @@
         let ttsSpeed = parseFloat(localStorage.getItem('tts_speed')) || 1.7; // TTS 속도
         let audioGenerating = false; // 오디오 생성 중 상태
 
+        // Pomodoro 상태
+        let pomodoroState = {
+            isRunning: false,
+            isPaused: false,
+            mode: 'focus', // 'focus' or 'break'
+            timeRemaining: 25 * 60, // 초 단위
+            focusDuration: parseInt(localStorage.getItem('pomodoro_focus')) || 25, // 분
+            breakDuration: parseInt(localStorage.getItem('pomodoro_break')) || 5, // 분
+            todayCount: 0,
+            todayDate: null,
+            intervalId: null
+        };
+
+        // 오늘 뽀모도로 카운트 로드
+        function loadTodayPomodoro() {
+            const today = new Date().toDateString();
+            const saved = localStorage.getItem('pomodoro_today');
+            if (saved) {
+                const data = JSON.parse(saved);
+                if (data.date === today) {
+                    pomodoroState.todayCount = data.count;
+                    pomodoroState.todayDate = today;
+                } else {
+                    pomodoroState.todayCount = 0;
+                    pomodoroState.todayDate = today;
+                }
+            } else {
+                pomodoroState.todayCount = 0;
+                pomodoroState.todayDate = today;
+            }
+            renderPomodoroTomatoes();
+        }
+
+        function saveTodayPomodoro() {
+            localStorage.setItem('pomodoro_today', JSON.stringify({
+                date: pomodoroState.todayDate || new Date().toDateString(),
+                count: pomodoroState.todayCount
+            }));
+        }
+
+        function renderPomodoroTomatoes() {
+            const container = document.getElementById('pomodoro-tomatoes');
+            if (!container) return;
+            
+            if (pomodoroState.todayCount === 0) {
+                container.innerHTML = '<span class="pomodoro-empty">아직 완료한 세션이 없어요</span>';
+            } else {
+                container.innerHTML = '🍅'.repeat(pomodoroState.todayCount)
+                    .split('')
+                    .map((t, i) => i % 2 === 0 ? `<span class="pomodoro-tomato">${t}` : `${t}</span>`)
+                    .join('');
+            }
+        }
+
         // ========== Init ==========
         document.addEventListener('DOMContentLoaded', async () => {
             await openDB();
@@ -2561,6 +2920,10 @@
                 speedSlider.value = ttsSpeed;
                 speedValue.textContent = ttsSpeed.toFixed(1) + 'x';
             }
+            
+            // 뽀모도로 초기화
+            loadTodayPomodoro();
+            initPomodoroSettings();
         });
 
         function setupEvents() {
@@ -5014,6 +5377,263 @@
                 }
             });
         }
+
+        // ========== Pomodoro Functions ==========
+        function initPomodoroSettings() {
+            const focusInput = document.getElementById('pomodoro-focus-time');
+            const breakInput = document.getElementById('pomodoro-break-time');
+            if (focusInput) focusInput.value = pomodoroState.focusDuration;
+            if (breakInput) breakInput.value = pomodoroState.breakDuration;
+            updatePomodoroDisplay();
+        }
+
+        function savePomodoroSettings() {
+            const focusInput = document.getElementById('pomodoro-focus-time');
+            const breakInput = document.getElementById('pomodoro-break-time');
+            
+            pomodoroState.focusDuration = parseInt(focusInput.value) || 25;
+            pomodoroState.breakDuration = parseInt(breakInput.value) || 5;
+            
+            localStorage.setItem('pomodoro_focus', pomodoroState.focusDuration);
+            localStorage.setItem('pomodoro_break', pomodoroState.breakDuration);
+            
+            // 타이머가 실행 중이지 않으면 시간 리셋
+            if (!pomodoroState.isRunning) {
+                pomodoroState.timeRemaining = pomodoroState.focusDuration * 60;
+                updatePomodoroDisplay();
+            }
+            
+            closeModal('pomodoro-settings-modal');
+        }
+
+        function showPomodoroTimer() {
+            const widget = document.getElementById('pomodoro-timer-widget');
+            widget.style.display = 'flex';
+            
+            // 위치 조정 (오른쪽 패널 왼쪽에 배치)
+            const rightPanel = document.getElementById('right-panel');
+            if (rightPanel) {
+                const rightPanelWidth = rightPanel.offsetWidth;
+                widget.style.right = (rightPanelWidth + 20) + 'px';
+            }
+            
+            updatePomodoroDisplay();
+        }
+
+        function hidePomodoroTimer() {
+            document.getElementById('pomodoro-timer-widget').style.display = 'none';
+        }
+
+        function updatePomodoroDisplay() {
+            const display = document.getElementById('pomodoro-timer-display');
+            const label = document.getElementById('pomodoro-timer-label');
+            
+            if (!display || !label) return;
+            
+            const minutes = Math.floor(pomodoroState.timeRemaining / 60);
+            const seconds = pomodoroState.timeRemaining % 60;
+            display.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            display.classList.remove('focus', 'break');
+            display.classList.add(pomodoroState.mode);
+            
+            label.textContent = pomodoroState.mode === 'focus' ? '집중' : '휴식';
+        }
+
+        function togglePomodoro() {
+            if (!pomodoroState.isRunning) {
+                startPomodoro();
+            } else if (pomodoroState.isPaused) {
+                resumePomodoro();
+            } else {
+                pausePomodoro();
+            }
+        }
+
+        function startPomodoro() {
+            pomodoroState.isRunning = true;
+            pomodoroState.isPaused = false;
+            pomodoroState.mode = 'focus';
+            pomodoroState.timeRemaining = pomodoroState.focusDuration * 60;
+            
+            const playBtn = document.getElementById('pomodoro-play-btn');
+            const stopBtn = document.getElementById('pomodoro-stop-btn');
+            
+            playBtn.innerHTML = '⏸';
+            playBtn.classList.add('pause');
+            stopBtn.style.display = 'flex';
+            
+            pomodoroState.intervalId = setInterval(pomodoroTick, 1000);
+            updatePomodoroDisplay();
+        }
+
+        function pausePomodoro() {
+            pomodoroState.isPaused = true;
+            clearInterval(pomodoroState.intervalId);
+            
+            const playBtn = document.getElementById('pomodoro-play-btn');
+            playBtn.innerHTML = '▶';
+            playBtn.classList.remove('pause');
+        }
+
+        function resumePomodoro() {
+            pomodoroState.isPaused = false;
+            const playBtn = document.getElementById('pomodoro-play-btn');
+            playBtn.innerHTML = '⏸';
+            playBtn.classList.add('pause');
+            
+            pomodoroState.intervalId = setInterval(pomodoroTick, 1000);
+        }
+
+        function stopPomodoro() {
+            pomodoroState.isRunning = false;
+            pomodoroState.isPaused = false;
+            pomodoroState.mode = 'focus';
+            pomodoroState.timeRemaining = pomodoroState.focusDuration * 60;
+            
+            clearInterval(pomodoroState.intervalId);
+            
+            const playBtn = document.getElementById('pomodoro-play-btn');
+            const stopBtn = document.getElementById('pomodoro-stop-btn');
+            
+            playBtn.innerHTML = '▶';
+            playBtn.classList.remove('pause');
+            stopBtn.style.display = 'none';
+            
+            updatePomodoroDisplay();
+        }
+
+        function pomodoroTick() {
+            pomodoroState.timeRemaining--;
+            updatePomodoroDisplay();
+            
+            if (pomodoroState.timeRemaining <= 0) {
+                clearInterval(pomodoroState.intervalId);
+                
+                if (pomodoroState.mode === 'focus') {
+                    // 집중 세션 완료
+                    pomodoroState.todayCount++;
+                    pomodoroState.todayDate = new Date().toDateString();
+                    saveTodayPomodoro();
+                    renderPomodoroTomatoes();
+                    showFocusCompleteAnimation();
+                } else {
+                    // 휴식 세션 완료
+                    showBreakCompleteAnimation();
+                }
+            }
+        }
+
+        function playPomodoroAlarm() {
+            // Web Audio API를 사용한 간단한 알람 소리
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // 3연속 비프음
+            [0, 200, 400].forEach(delay => {
+                setTimeout(() => {
+                    const oscillator = audioCtx.createOscillator();
+                    const gainNode = audioCtx.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioCtx.destination);
+                    
+                    oscillator.frequency.value = 880; // A5
+                    oscillator.type = 'sine';
+                    gainNode.gain.value = 0.3;
+                    
+                    oscillator.start();
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                    oscillator.stop(audioCtx.currentTime + 0.15);
+                }, delay);
+            });
+        }
+
+        function showFocusCompleteAnimation() {
+            playPomodoroAlarm();
+            
+            const overlay = document.getElementById('pomodoro-overlay');
+            const animation = document.getElementById('pomodoro-animation');
+            const message = document.getElementById('pomodoro-message');
+            const subMessage = document.getElementById('pomodoro-sub-message');
+            const btn = document.getElementById('pomodoro-overlay-btn');
+            
+            // 강아지가 토마토로 저글링하는 애니메이션
+            animation.innerHTML = `
+                <div class="pomodoro-dog">🐕</div>
+                <div class="pomodoro-tomatoes-juggle pomodoro-tomato-1">🍅</div>
+                <div class="pomodoro-tomatoes-juggle pomodoro-tomato-2">🍅</div>
+                <div class="pomodoro-tomatoes-juggle pomodoro-tomato-3">🍅</div>
+            `;
+            
+            message.textContent = '🎉 집중 세션 완료!';
+            subMessage.textContent = `오늘 ${pomodoroState.todayCount}번째 뽀모도로를 완료했어요!`;
+            btn.textContent = '☕ 휴식 시작하기';
+            btn.className = 'pomodoro-overlay-btn break-btn';
+            btn.dataset.action = 'startBreak';
+            
+            overlay.classList.add('show');
+        }
+
+        function showBreakCompleteAnimation() {
+            playPomodoroAlarm();
+            
+            const overlay = document.getElementById('pomodoro-overlay');
+            const animation = document.getElementById('pomodoro-animation');
+            const message = document.getElementById('pomodoro-message');
+            const subMessage = document.getElementById('pomodoro-sub-message');
+            const btn = document.getElementById('pomodoro-overlay-btn');
+            
+            // 강아지가 자다가 일어나는 애니메이션
+            animation.innerHTML = `
+                <div class="pomodoro-wakeup">🐕</div>
+                <div class="pomodoro-zzz">💤</div>
+            `;
+            
+            // 잠시 후 일어난 상태로 변경
+            setTimeout(() => {
+                animation.innerHTML = `<div class="pomodoro-dog" style="animation: none;">🐕</div>`;
+            }, 1000);
+            
+            message.textContent = '☀️ 휴식 끝!';
+            subMessage.textContent = '다시 집중할 준비가 됐어요!';
+            btn.textContent = '🔥 집중 시작하기';
+            btn.className = 'pomodoro-overlay-btn focus-btn';
+            btn.dataset.action = 'startFocus';
+            
+            overlay.classList.add('show');
+        }
+
+        function handlePomodoroOverlayClick() {
+            const btn = document.getElementById('pomodoro-overlay-btn');
+            const overlay = document.getElementById('pomodoro-overlay');
+            
+            overlay.classList.remove('show');
+            
+            if (btn.dataset.action === 'startBreak') {
+                // 휴식 시작
+                pomodoroState.mode = 'break';
+                pomodoroState.timeRemaining = pomodoroState.breakDuration * 60;
+                pomodoroState.isPaused = false;
+                pomodoroState.intervalId = setInterval(pomodoroTick, 1000);
+                
+                const playBtn = document.getElementById('pomodoro-play-btn');
+                playBtn.innerHTML = '⏸';
+                playBtn.classList.add('pause');
+                
+                updatePomodoroDisplay();
+            } else if (btn.dataset.action === 'startFocus') {
+                // 새 집중 세션 시작
+                startPomodoro();
+            }
+        }
+
+        // 라이브러리로 돌아갈 때 타이머 위젯 숨기기
+        const originalBackToLibrary = backToLibrary;
+        backToLibrary = function() {
+            // 뽀모도로 타이머 숨기기 (실행 중이면 계속 실행)
+            // hidePomodoroTimer(); // 주석: 실행 중에도 유지하려면 이 줄 제거
+            originalBackToLibrary();
+        };
     </script>
 </body>
 </html>
