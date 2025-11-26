@@ -82,7 +82,9 @@ npm start
 
 ---
 
-## 🔑 Claude API (선택사항)
+## 🔑 API 키 설정
+
+### Claude API (선택사항)
 
 > ⚠️ **AI 챗 기능**을 사용하려면 Claude API 키가 필요해요!
 
@@ -91,6 +93,17 @@ npm start
 2. 회원가입 후 API Keys에서 키 생성
 3. 앱에서 **[🔑 API]** 버튼 클릭 → 키 입력
 
+### OpenAI API (선택사항)
+
+> ⚠️ **TTS(텍스트 음성 변환) 기능**을 사용하려면 OpenAI API 키가 필요해요!
+
+**API 키 발급:**
+1. https://platform.openai.com 접속
+2. 회원가입 후 API Keys에서 키 생성
+3. 앱에서 **[🔑 API]** 버튼 클릭 → OpenAI 키 입력
+
+---
+
 **API 키 없이도 가능한 기능:**
 - ✅ PDF 열기 & 읽기
 - ✅ 문단 클릭 & 문장 이동
@@ -98,7 +111,8 @@ npm start
 - ✅ 노트 작성
 
 **API 키 필요한 기능:**
-- 🔑 Claude AI 챗
+- 🔑 Claude AI 챗 (Claude API)
+- 🔑 TTS 음성 읽기 (OpenAI API)
 
 ---
 

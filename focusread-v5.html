@@ -620,7 +620,7 @@
             font-weight: 500;
         }
         
-        /* 강아지 바이올린 애니메이션 */
+        /* 강아지 뮤지션 공통 스타일 */
         .dog-musician {
             display: flex;
             flex-direction: column;
@@ -632,7 +632,6 @@
             width: 80px;
             height: 70px;
         }
-        /* 강아지 몸 */
         .dog-body {
             position: absolute;
             bottom: 0;
@@ -643,7 +642,6 @@
             background: #d4a574;
             border-radius: 50% 50% 45% 45%;
         }
-        /* 강아지 머리 */
         .dog-head {
             position: absolute;
             bottom: 28px;
@@ -653,13 +651,7 @@
             height: 28px;
             background: #d4a574;
             border-radius: 50% 50% 45% 45%;
-            animation: dog-head-bob 0.5s ease-in-out infinite;
         }
-        @keyframes dog-head-bob {
-            0%, 100% { transform: translateX(-50%) rotate(-3deg); }
-            50% { transform: translateX(-50%) rotate(3deg); }
-        }
-        /* 강아지 귀 */
         .dog-ear-left, .dog-ear-right {
             position: absolute;
             bottom: 48px;
@@ -670,7 +662,6 @@
         }
         .dog-ear-left { left: 18px; transform: rotate(-15deg); }
         .dog-ear-right { right: 18px; transform: rotate(15deg); }
-        /* 강아지 눈 - head 기준 상대 위치 */
         .dog-eye-left, .dog-eye-right {
             position: absolute;
             top: 8px;
@@ -686,7 +677,6 @@
             0%, 45%, 55%, 100% { transform: scaleY(1); }
             50% { transform: scaleY(0.1); }
         }
-        /* 강아지 코 - head 기준 상대 위치 */
         .dog-nose {
             position: absolute;
             top: 15px;
@@ -697,89 +687,6 @@
             background: #333;
             border-radius: 50%;
         }
-        /* 강아지 팔 (바이올린 잡는) */
-        .dog-arm-left {
-            position: absolute;
-            bottom: 12px;
-            left: 12px;
-            width: 8px;
-            height: 20px;
-            background: #d4a574;
-            border-radius: 4px;
-            transform-origin: top center;
-            animation: arm-hold 0.5s ease-in-out infinite;
-        }
-        .dog-arm-right {
-            position: absolute;
-            bottom: 12px;
-            right: 8px;
-            width: 8px;
-            height: 22px;
-            background: #d4a574;
-            border-radius: 4px;
-            transform-origin: top center;
-            animation: arm-bow 0.25s ease-in-out infinite;
-        }
-        @keyframes arm-hold {
-            0%, 100% { transform: rotate(-20deg); }
-            50% { transform: rotate(-25deg); }
-        }
-        @keyframes arm-bow {
-            0%, 100% { transform: rotate(30deg); }
-            50% { transform: rotate(50deg); }
-        }
-        /* 바이올린 */
-        .violin {
-            position: absolute;
-            bottom: 15px;
-            left: -5px;
-            width: 28px;
-            height: 12px;
-            background: #8b4513;
-            border-radius: 40%;
-            transform: rotate(-30deg);
-            animation: violin-move 0.5s ease-in-out infinite;
-        }
-        .violin::before {
-            content: '';
-            position: absolute;
-            top: -8px;
-            left: 12px;
-            width: 4px;
-            height: 20px;
-            background: #654321;
-            border-radius: 2px;
-        }
-        @keyframes violin-move {
-            0%, 100% { transform: rotate(-30deg) translateY(0); }
-            50% { transform: rotate(-28deg) translateY(-1px); }
-        }
-        /* 활 */
-        .bow {
-            position: absolute;
-            bottom: 20px;
-            right: 0px;
-            width: 35px;
-            height: 3px;
-            background: #654321;
-            border-radius: 2px;
-            transform-origin: right center;
-            animation: bow-stroke 0.25s ease-in-out infinite;
-        }
-        .bow::before {
-            content: '';
-            position: absolute;
-            top: -1px;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: #ddd;
-        }
-        @keyframes bow-stroke {
-            0%, 100% { transform: rotate(-10deg) translateX(0); }
-            50% { transform: rotate(10deg) translateX(-8px); }
-        }
-        /* 음표들 */
         .music-notes {
             position: absolute;
             top: -5px;
@@ -803,6 +710,247 @@
             font-size: 11px;
             color: var(--text-secondary);
             font-style: italic;
+        }
+        
+        /* ===== 1. 바이올린 강아지 ===== */
+        .dog-violin .dog-head { animation: dog-head-bob 0.5s ease-in-out infinite; }
+        @keyframes dog-head-bob {
+            0%, 100% { transform: translateX(-50%) rotate(-3deg); }
+            50% { transform: translateX(-50%) rotate(3deg); }
+        }
+        .dog-violin .dog-arm-left {
+            position: absolute; bottom: 12px; left: 12px;
+            width: 8px; height: 20px; background: #d4a574;
+            border-radius: 4px; transform-origin: top center;
+            animation: violin-arm-hold 0.5s ease-in-out infinite;
+        }
+        .dog-violin .dog-arm-right {
+            position: absolute; bottom: 12px; right: 8px;
+            width: 8px; height: 22px; background: #d4a574;
+            border-radius: 4px; transform-origin: top center;
+            animation: violin-arm-bow 0.25s ease-in-out infinite;
+        }
+        @keyframes violin-arm-hold {
+            0%, 100% { transform: rotate(-20deg); }
+            50% { transform: rotate(-25deg); }
+        }
+        @keyframes violin-arm-bow {
+            0%, 100% { transform: rotate(30deg); }
+            50% { transform: rotate(50deg); }
+        }
+        .violin {
+            position: absolute; bottom: 15px; left: -5px;
+            width: 28px; height: 12px; background: #8b4513;
+            border-radius: 40%; transform: rotate(-30deg);
+            animation: violin-move 0.5s ease-in-out infinite;
+        }
+        .violin::before {
+            content: ''; position: absolute; top: -8px; left: 12px;
+            width: 4px; height: 20px; background: #654321; border-radius: 2px;
+        }
+        @keyframes violin-move {
+            0%, 100% { transform: rotate(-30deg) translateY(0); }
+            50% { transform: rotate(-28deg) translateY(-1px); }
+        }
+        .bow {
+            position: absolute; bottom: 20px; right: 0px;
+            width: 35px; height: 3px; background: #654321;
+            border-radius: 2px; transform-origin: right center;
+            animation: bow-stroke 0.25s ease-in-out infinite;
+        }
+        .bow::before {
+            content: ''; position: absolute; top: -1px; left: 0; right: 0;
+            height: 1px; background: #ddd;
+        }
+        @keyframes bow-stroke {
+            0%, 100% { transform: rotate(-10deg) translateX(0); }
+            50% { transform: rotate(10deg) translateX(-8px); }
+        }
+        
+        /* ===== 2. 플루트 강아지 ===== */
+        .dog-flute .dog-head { animation: flute-head 0.8s ease-in-out infinite; }
+        @keyframes flute-head {
+            0%, 100% { transform: translateX(-50%) rotate(5deg); }
+            50% { transform: translateX(-50%) rotate(-5deg); }
+        }
+        .dog-flute .dog-arm-left, .dog-flute .dog-arm-right {
+            position: absolute; bottom: 18px;
+            width: 6px; height: 15px; background: #d4a574;
+            border-radius: 3px;
+        }
+        .dog-flute .dog-arm-left { left: 20px; transform: rotate(-30deg); }
+        .dog-flute .dog-arm-right { right: 5px; transform: rotate(10deg); }
+        .flute {
+            position: absolute; bottom: 25px; left: 5px;
+            width: 45px; height: 6px; background: linear-gradient(90deg, #c0c0c0, #e8e8e8);
+            border-radius: 3px; transform: rotate(-15deg);
+            animation: flute-play 0.8s ease-in-out infinite;
+        }
+        .flute::before, .flute::after {
+            content: ''; position: absolute;
+            width: 4px; height: 4px; background: #888;
+            border-radius: 50%; top: 1px;
+        }
+        .flute::before { left: 10px; }
+        .flute::after { left: 20px; }
+        @keyframes flute-play {
+            0%, 100% { transform: rotate(-15deg); }
+            50% { transform: rotate(-12deg); }
+        }
+        .dog-flute .cheeks {
+            position: absolute; top: 12px; width: 8px; height: 6px;
+            background: #ffb6c1; border-radius: 50%; opacity: 0.7;
+            animation: cheek-puff 0.8s ease-in-out infinite;
+        }
+        .dog-flute .cheek-left { left: 2px; }
+        .dog-flute .cheek-right { right: 2px; }
+        @keyframes cheek-puff {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+        }
+        
+        /* ===== 3. 피아노 강아지 ===== */
+        .dog-piano .dog-head { animation: piano-head 0.3s ease-in-out infinite; }
+        @keyframes piano-head {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-2px); }
+        }
+        .dog-piano .dog-arm-left, .dog-piano .dog-arm-right {
+            position: absolute; bottom: 5px;
+            width: 6px; height: 18px; background: #d4a574;
+            border-radius: 3px; transform-origin: top center;
+        }
+        .dog-piano .dog-arm-left { left: 18px; animation: piano-left 0.3s ease-in-out infinite; }
+        .dog-piano .dog-arm-right { right: 18px; animation: piano-right 0.3s ease-in-out infinite 0.15s; }
+        @keyframes piano-left {
+            0%, 100% { transform: rotate(-10deg); }
+            50% { transform: rotate(-20deg); }
+        }
+        @keyframes piano-right {
+            0%, 100% { transform: rotate(10deg); }
+            50% { transform: rotate(20deg); }
+        }
+        .piano {
+            position: absolute; bottom: -5px; left: 50%;
+            transform: translateX(-50%);
+            width: 50px; height: 12px; background: #222;
+            border-radius: 2px;
+        }
+        .piano-keys {
+            position: absolute; top: 2px; left: 3px;
+            display: flex; gap: 1px;
+        }
+        .piano-key {
+            width: 5px; height: 8px; background: white;
+            border-radius: 0 0 1px 1px;
+            animation: key-press 0.3s ease-in-out infinite;
+        }
+        .piano-key:nth-child(2) { animation-delay: 0.1s; }
+        .piano-key:nth-child(3) { animation-delay: 0.2s; }
+        .piano-key:nth-child(4) { animation-delay: 0.15s; }
+        .piano-key:nth-child(5) { animation-delay: 0.25s; }
+        .piano-key:nth-child(6) { animation-delay: 0.05s; }
+        .piano-key.black { 
+            background: #333; height: 5px; width: 3px; 
+            margin-left: -2px; margin-right: -2px; z-index: 1;
+        }
+        @keyframes key-press {
+            0%, 100% { transform: translateY(0); background: white; }
+            50% { transform: translateY(1px); background: #ddd; }
+        }
+        
+        /* ===== 4. 노래하는 강아지 ===== */
+        .dog-sing .dog-head { animation: sing-head 0.6s ease-in-out infinite; }
+        @keyframes sing-head {
+            0%, 100% { transform: translateX(-50%) rotate(0) scale(1); }
+            25% { transform: translateX(-50%) rotate(-5deg) scale(1.02); }
+            75% { transform: translateX(-50%) rotate(5deg) scale(1.02); }
+        }
+        .dog-sing .dog-mouth {
+            position: absolute; top: 18px; left: 50%;
+            transform: translateX(-50%);
+            width: 10px; height: 8px; background: #333;
+            border-radius: 50%; 
+            animation: mouth-sing 0.3s ease-in-out infinite;
+        }
+        @keyframes mouth-sing {
+            0%, 100% { transform: translateX(-50%) scaleY(1); }
+            50% { transform: translateX(-50%) scaleY(1.5); }
+        }
+        .dog-sing .dog-arm-left, .dog-sing .dog-arm-right {
+            position: absolute; bottom: 15px;
+            width: 6px; height: 15px; background: #d4a574;
+            border-radius: 3px;
+        }
+        .dog-sing .dog-arm-left { left: 8px; transform: rotate(-30deg); animation: wave-left 0.6s ease-in-out infinite; }
+        .dog-sing .dog-arm-right { right: 8px; transform: rotate(30deg); animation: wave-right 0.6s ease-in-out infinite; }
+        @keyframes wave-left {
+            0%, 100% { transform: rotate(-30deg); }
+            50% { transform: rotate(-50deg); }
+        }
+        @keyframes wave-right {
+            0%, 100% { transform: rotate(30deg); }
+            50% { transform: rotate(50deg); }
+        }
+        .microphone {
+            position: absolute; bottom: 0; left: 50%;
+            transform: translateX(-50%);
+            width: 4px; height: 35px; background: #666;
+        }
+        .microphone::before {
+            content: ''; position: absolute; top: -10px; left: -5px;
+            width: 14px; height: 14px; background: #444;
+            border-radius: 50% 50% 40% 40%;
+        }
+        .dog-sing .music-notes { top: -10px; right: -15px; }
+        
+        /* ===== 5. 트럼펫 강아지 ===== */
+        .dog-trumpet .dog-head { animation: trumpet-head 0.4s ease-in-out infinite; }
+        @keyframes trumpet-head {
+            0%, 100% { transform: translateX(-50%) rotate(10deg); }
+            50% { transform: translateX(-50%) rotate(15deg); }
+        }
+        .dog-trumpet .dog-arm-left, .dog-trumpet .dog-arm-right {
+            position: absolute; bottom: 18px;
+            width: 6px; height: 14px; background: #d4a574;
+            border-radius: 3px;
+        }
+        .dog-trumpet .dog-arm-left { left: 22px; transform: rotate(-40deg); }
+        .dog-trumpet .dog-arm-right { right: 15px; transform: rotate(-20deg); }
+        .trumpet {
+            position: absolute; bottom: 22px; left: 0px;
+            width: 40px; height: 8px; 
+            background: linear-gradient(180deg, #ffd700, #daa520);
+            border-radius: 4px 15px 15px 4px;
+            transform: rotate(-20deg);
+            animation: trumpet-play 0.4s ease-in-out infinite;
+        }
+        .trumpet::before {
+            content: ''; position: absolute; right: -8px; top: -4px;
+            width: 16px; height: 16px;
+            border: 3px solid #daa520; border-radius: 50%;
+            border-left: none; border-bottom: none;
+            transform: rotate(45deg);
+        }
+        .trumpet::after {
+            content: ''; position: absolute; left: 5px; top: 2px;
+            width: 3px; height: 3px; background: #b8860b;
+            border-radius: 50%; box-shadow: 6px 0 0 #b8860b, 12px 0 0 #b8860b;
+        }
+        @keyframes trumpet-play {
+            0%, 100% { transform: rotate(-20deg); }
+            50% { transform: rotate(-18deg) translateX(2px); }
+        }
+        .dog-trumpet .cheeks {
+            position: absolute; top: 10px; width: 10px; height: 8px;
+            background: #ffb6c1; border-radius: 50%; opacity: 0.8;
+            animation: trumpet-cheek 0.4s ease-in-out infinite;
+        }
+        .dog-trumpet .cheek-left { left: 0px; }
+        .dog-trumpet .cheek-right { right: 0px; }
+        @keyframes trumpet-cheek {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.4); }
         }
         
         /* Audio Cache Button */
@@ -1499,7 +1647,7 @@
                             <button class="btn tts-btn" id="generate-audio-btn" onclick="generateAllAudio()" title="전체 오디오 생성">🎙️</button>
                             <button class="btn tts-btn" id="audio-mode-btn" onclick="toggleAudioMode()" title="오디오 모드" disabled>🔇</button>
                             <div class="speed-control" id="speed-control" style="display:none;">
-                                <input type="range" id="speed-slider" min="0.5" max="2.0" step="0.1" value="1.1" onchange="updateTTSSpeed(this.value)">
+                                <input type="range" id="speed-slider" min="0.5" max="2.0" step="0.1" value="1.7" onchange="updateTTSSpeed(this.value)">
                                 <span id="speed-value">1.1x</span>
                             </div>
                             <span class="section-hint"><kbd>←</kbd><kbd>→</kbd> 문장 이동</span>
@@ -2389,7 +2537,7 @@
         let ttsAudio = null;
         let ttsCache = new Map(); // 문장별 오디오 메모리 캐시
         let audioModeEnabled = false; // 오디오 모드 토글
-        let ttsSpeed = parseFloat(localStorage.getItem('tts_speed')) || 1.1; // TTS 속도
+        let ttsSpeed = parseFloat(localStorage.getItem('tts_speed')) || 1.7; // TTS 속도
         let audioGenerating = false; // 오디오 생성 중 상태
 
         // ========== Init ==========
@@ -3428,7 +3576,13 @@
 
             selectedSection = section;
             selectedParagraph = para;
-            sentences = splitSentences(para.text);
+            
+            // para.sentences가 있으면 그걸 사용 (오디오 캐시와 동일한 문장 분리)
+            if (para.sentences && para.sentences.length > 0) {
+                sentences = para.sentences.map(s => s.text || s);
+            } else {
+                sentences = splitSentences(para.text);
+            }
             sentenceIndex = sentencePosition === 'last' ? sentences.length - 1 : 0;
 
             // 현재 문단 인덱스 계산
@@ -3695,6 +3849,9 @@
             });
             scrollToSentence();
             renderSentenceOverlay();
+            
+            // Semantic Chunking 색상 적용
+            await updateActiveSentenceChunks();
             
             // 오디오 모드가 켜져 있으면 현재 문장 재생
             if (audioModeEnabled) {
@@ -4352,7 +4509,7 @@
                 return;
             }
             
-            // 모든 문장 수집 (sentences가 있으면 문장별, 없으면 문단 통째로)
+            // 모든 문장 수집 (sentences가 있으면 문장별, 없으면 splitSentences로 분리)
             const allSentences = [];
             const sections = currentPaper.sections || [];
             
@@ -4370,11 +4527,16 @@
                             }
                         }
                     } else if (para.text && para.text.trim().length > 0) {
-                        // 문장 데이터가 없으면 문단 전체를 하나로
-                        allSentences.push({
-                            text: para.text.trim(),
-                            cacheKey: `${currentPaper.id}_${hashString(para.text.trim())}`
-                        });
+                        // 문장 데이터가 없으면 splitSentences로 분리 (재생 시와 동일한 방식)
+                        const paraSentences = splitSentences(para.text);
+                        for (const sent of paraSentences) {
+                            if (sent && sent.trim().length > 0) {
+                                allSentences.push({
+                                    text: sent.trim(),
+                                    cacheKey: `${currentPaper.id}_${hashString(sent.trim())}`
+                                });
+                            }
+                        }
                     }
                 }
             }
@@ -4520,16 +4682,14 @@
             }
         }
         
-        // 프로그레스 UI
-        function showAudioProgress(current, total) {
-            let container = document.getElementById('audio-progress');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'audio-progress';
-                container.className = 'audio-progress';
-                container.innerHTML = `
-                    <div class="dog-musician">
-                        <div class="dog-container">
+        // 랜덤 강아지 뮤지션 HTML 생성
+        function getRandomDogMusician() {
+            const dogs = [
+                // 1. 바이올린 강아지
+                {
+                    type: 'dog-violin',
+                    html: `
+                        <div class="dog-container dog-violin">
                             <div class="dog-ear-left"></div>
                             <div class="dog-ear-right"></div>
                             <div class="dog-head">
@@ -4547,7 +4707,129 @@
                                 <span class="note">♫</span>
                                 <span class="note">♪</span>
                             </div>
-                        </div>
+                        </div>`
+                },
+                // 2. 플루트 강아지
+                {
+                    type: 'dog-flute',
+                    html: `
+                        <div class="dog-container dog-flute">
+                            <div class="dog-ear-left"></div>
+                            <div class="dog-ear-right"></div>
+                            <div class="dog-head">
+                                <div class="dog-eye-left"></div>
+                                <div class="dog-eye-right"></div>
+                                <div class="dog-nose"></div>
+                                <div class="cheeks cheek-left"></div>
+                                <div class="cheeks cheek-right"></div>
+                            </div>
+                            <div class="dog-body"></div>
+                            <div class="dog-arm-left"></div>
+                            <div class="dog-arm-right"></div>
+                            <div class="flute"></div>
+                            <div class="music-notes">
+                                <span class="note">♪</span>
+                                <span class="note">♫</span>
+                                <span class="note">♪</span>
+                            </div>
+                        </div>`
+                },
+                // 3. 피아노 강아지
+                {
+                    type: 'dog-piano',
+                    html: `
+                        <div class="dog-container dog-piano">
+                            <div class="dog-ear-left"></div>
+                            <div class="dog-ear-right"></div>
+                            <div class="dog-head">
+                                <div class="dog-eye-left"></div>
+                                <div class="dog-eye-right"></div>
+                                <div class="dog-nose"></div>
+                            </div>
+                            <div class="dog-body"></div>
+                            <div class="dog-arm-left"></div>
+                            <div class="dog-arm-right"></div>
+                            <div class="piano">
+                                <div class="piano-keys">
+                                    <div class="piano-key"></div>
+                                    <div class="piano-key black"></div>
+                                    <div class="piano-key"></div>
+                                    <div class="piano-key black"></div>
+                                    <div class="piano-key"></div>
+                                    <div class="piano-key"></div>
+                                </div>
+                            </div>
+                            <div class="music-notes">
+                                <span class="note">♪</span>
+                                <span class="note">♫</span>
+                                <span class="note">♪</span>
+                            </div>
+                        </div>`
+                },
+                // 4. 노래하는 강아지
+                {
+                    type: 'dog-sing',
+                    html: `
+                        <div class="dog-container dog-sing">
+                            <div class="dog-ear-left"></div>
+                            <div class="dog-ear-right"></div>
+                            <div class="dog-head">
+                                <div class="dog-eye-left"></div>
+                                <div class="dog-eye-right"></div>
+                                <div class="dog-mouth"></div>
+                            </div>
+                            <div class="dog-body"></div>
+                            <div class="dog-arm-left"></div>
+                            <div class="dog-arm-right"></div>
+                            <div class="microphone"></div>
+                            <div class="music-notes">
+                                <span class="note">♪</span>
+                                <span class="note">♫</span>
+                                <span class="note">♪</span>
+                            </div>
+                        </div>`
+                },
+                // 5. 트럼펫 강아지
+                {
+                    type: 'dog-trumpet',
+                    html: `
+                        <div class="dog-container dog-trumpet">
+                            <div class="dog-ear-left"></div>
+                            <div class="dog-ear-right"></div>
+                            <div class="dog-head">
+                                <div class="dog-eye-left"></div>
+                                <div class="dog-eye-right"></div>
+                                <div class="dog-nose"></div>
+                                <div class="cheeks cheek-left"></div>
+                                <div class="cheeks cheek-right"></div>
+                            </div>
+                            <div class="dog-body"></div>
+                            <div class="dog-arm-left"></div>
+                            <div class="dog-arm-right"></div>
+                            <div class="trumpet"></div>
+                            <div class="music-notes">
+                                <span class="note">♪</span>
+                                <span class="note">♫</span>
+                                <span class="note">♪</span>
+                            </div>
+                        </div>`
+                }
+            ];
+            
+            return dogs[Math.floor(Math.random() * dogs.length)];
+        }
+        
+        // 프로그레스 UI
+        function showAudioProgress(current, total) {
+            let container = document.getElementById('audio-progress');
+            if (!container) {
+                const dog = getRandomDogMusician();
+                container = document.createElement('div');
+                container.id = 'audio-progress';
+                container.className = 'audio-progress';
+                container.innerHTML = `
+                    <div class="dog-musician">
+                        ${dog.html}
                         <span class="dog-message">열심히 오디오를 만들고 있어요...</span>
                     </div>
                     <div class="audio-progress-top">
@@ -4593,7 +4875,8 @@
         function hideAudioProgress() {
             const container = document.getElementById('audio-progress');
             if (container) {
-                container.style.display = 'none';
+                // 다음에 새 강아지 보여주기 위해 삭제
+                container.remove();
             }
         }
         
