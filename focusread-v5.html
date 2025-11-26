@@ -516,6 +516,11 @@
             align-items: center;
             justify-content: space-between;
         }
+        .section-header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
         .section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); }
         .section-hint { font-size: 10px; color: var(--text-muted); }
         .section-hint kbd {
@@ -523,6 +528,295 @@
             padding: 2px 5px;
             border-radius: 3px;
             font-family: 'IBM Plex Mono', monospace;
+        }
+        
+        /* TTS Button */
+        .tts-btn {
+            padding: 4px 8px !important;
+            font-size: 14px !important;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .tts-btn.playing {
+            background: var(--accent-blue) !important;
+            color: white !important;
+            animation: pulse 1.5s infinite;
+        }
+        .tts-btn.audio-on {
+            background: var(--accent-green) !important;
+            color: white !important;
+        }
+        .tts-btn.generating {
+            background: var(--accent-orange) !important;
+            color: white !important;
+            animation: pulse 1s infinite;
+        }
+        .tts-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        /* Speed Control */
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-tertiary);
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        .speed-control input[type="range"] {
+            width: 60px;
+            height: 4px;
+            cursor: pointer;
+        }
+        .speed-control span {
+            font-size: 11px;
+            color: var(--text-secondary);
+            min-width: 32px;
+        }
+        
+        /* Audio Progress */
+        .audio-progress {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: linear-gradient(135deg, #f8f6ff 0%, #fff5f5 100%);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+        }
+        .audio-progress-top {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+        .audio-progress-bar {
+            flex: 1;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .audio-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            transition: width 0.3s;
+            border-radius: 4px;
+        }
+        .audio-progress-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            min-width: 100px;
+            text-align: right;
+            font-weight: 500;
+        }
+        
+        /* 강아지 바이올린 애니메이션 */
+        .dog-musician {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .dog-container {
+            position: relative;
+            width: 80px;
+            height: 70px;
+        }
+        /* 강아지 몸 */
+        .dog-body {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 35px;
+            background: #d4a574;
+            border-radius: 50% 50% 45% 45%;
+        }
+        /* 강아지 머리 */
+        .dog-head {
+            position: absolute;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 32px;
+            height: 28px;
+            background: #d4a574;
+            border-radius: 50% 50% 45% 45%;
+            animation: dog-head-bob 0.5s ease-in-out infinite;
+        }
+        @keyframes dog-head-bob {
+            0%, 100% { transform: translateX(-50%) rotate(-3deg); }
+            50% { transform: translateX(-50%) rotate(3deg); }
+        }
+        /* 강아지 귀 */
+        .dog-ear-left, .dog-ear-right {
+            position: absolute;
+            bottom: 48px;
+            width: 12px;
+            height: 18px;
+            background: #c49464;
+            border-radius: 50% 50% 40% 40%;
+        }
+        .dog-ear-left { left: 18px; transform: rotate(-15deg); }
+        .dog-ear-right { right: 18px; transform: rotate(15deg); }
+        /* 강아지 눈 - head 기준 상대 위치 */
+        .dog-eye-left, .dog-eye-right {
+            position: absolute;
+            top: 8px;
+            width: 5px;
+            height: 5px;
+            background: #333;
+            border-radius: 50%;
+            animation: dog-blink 3s infinite;
+        }
+        .dog-eye-left { left: 6px; }
+        .dog-eye-right { right: 6px; }
+        @keyframes dog-blink {
+            0%, 45%, 55%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.1); }
+        }
+        /* 강아지 코 - head 기준 상대 위치 */
+        .dog-nose {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 5px;
+            background: #333;
+            border-radius: 50%;
+        }
+        /* 강아지 팔 (바이올린 잡는) */
+        .dog-arm-left {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            width: 8px;
+            height: 20px;
+            background: #d4a574;
+            border-radius: 4px;
+            transform-origin: top center;
+            animation: arm-hold 0.5s ease-in-out infinite;
+        }
+        .dog-arm-right {
+            position: absolute;
+            bottom: 12px;
+            right: 8px;
+            width: 8px;
+            height: 22px;
+            background: #d4a574;
+            border-radius: 4px;
+            transform-origin: top center;
+            animation: arm-bow 0.25s ease-in-out infinite;
+        }
+        @keyframes arm-hold {
+            0%, 100% { transform: rotate(-20deg); }
+            50% { transform: rotate(-25deg); }
+        }
+        @keyframes arm-bow {
+            0%, 100% { transform: rotate(30deg); }
+            50% { transform: rotate(50deg); }
+        }
+        /* 바이올린 */
+        .violin {
+            position: absolute;
+            bottom: 15px;
+            left: -5px;
+            width: 28px;
+            height: 12px;
+            background: #8b4513;
+            border-radius: 40%;
+            transform: rotate(-30deg);
+            animation: violin-move 0.5s ease-in-out infinite;
+        }
+        .violin::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 12px;
+            width: 4px;
+            height: 20px;
+            background: #654321;
+            border-radius: 2px;
+        }
+        @keyframes violin-move {
+            0%, 100% { transform: rotate(-30deg) translateY(0); }
+            50% { transform: rotate(-28deg) translateY(-1px); }
+        }
+        /* 활 */
+        .bow {
+            position: absolute;
+            bottom: 20px;
+            right: 0px;
+            width: 35px;
+            height: 3px;
+            background: #654321;
+            border-radius: 2px;
+            transform-origin: right center;
+            animation: bow-stroke 0.25s ease-in-out infinite;
+        }
+        .bow::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #ddd;
+        }
+        @keyframes bow-stroke {
+            0%, 100% { transform: rotate(-10deg) translateX(0); }
+            50% { transform: rotate(10deg) translateX(-8px); }
+        }
+        /* 음표들 */
+        .music-notes {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+        }
+        .note {
+            position: absolute;
+            font-size: 14px;
+            animation: float-note 1.5s ease-out infinite;
+            opacity: 0;
+        }
+        .note:nth-child(1) { animation-delay: 0s; right: 0; }
+        .note:nth-child(2) { animation-delay: 0.5s; right: 10px; }
+        .note:nth-child(3) { animation-delay: 1s; right: 5px; }
+        @keyframes float-note {
+            0% { transform: translateY(0); opacity: 0; }
+            20% { opacity: 1; }
+            100% { transform: translateY(-25px) translateX(10px); opacity: 0; }
+        }
+        .dog-message {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        
+        /* Audio Cache Button */
+        .audio-cache-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            padding: 4px;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+        .audio-cache-btn:hover {
+            opacity: 1;
         }
 
         .paragraph-section {
@@ -1089,6 +1383,21 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="openai-api-modal">
+        <div class="modal">
+            <div class="modal-title">🔊 OpenAI TTS API Key</div>
+            <input type="password" class="modal-input" id="openai-api-key-input" placeholder="sk-...">
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">
+                💡 TTS 기능을 사용하려면 OpenAI API 키가 필요합니다.<br>
+                <a href="https://platform.openai.com/api-keys" target="_blank" style="color: var(--accent-blue);">키 발급받기 →</a>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" onclick="closeModal('openai-api-modal')">취소</button>
+                <button class="btn btn-primary" onclick="saveOpenAIKey()">저장</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="folder-modal">
         <div class="modal">
             <div class="modal-title">📁 새 폴더</div>
@@ -1186,7 +1495,15 @@
                 <div class="paragraph-section" id="paragraph-section">
                     <div class="section-header" onclick="toggleSection('paragraph-section')">
                         <span><span class="collapse-icon">▼</span><span class="section-title">📖 문단 리더</span></span>
-                        <span class="section-hint"><kbd>←</kbd><kbd>→</kbd> 문장 이동</span>
+                        <div class="section-header-right" onclick="event.stopPropagation();">
+                            <button class="btn tts-btn" id="generate-audio-btn" onclick="generateAllAudio()" title="전체 오디오 생성">🎙️</button>
+                            <button class="btn tts-btn" id="audio-mode-btn" onclick="toggleAudioMode()" title="오디오 모드" disabled>🔇</button>
+                            <div class="speed-control" id="speed-control" style="display:none;">
+                                <input type="range" id="speed-slider" min="0.5" max="2.0" step="0.1" value="1.1" onchange="updateTTSSpeed(this.value)">
+                                <span id="speed-value">1.1x</span>
+                            </div>
+                            <span class="section-hint"><kbd>←</kbd><kbd>→</kbd> 문장 이동</span>
+                        </div>
                     </div>
                     <div class="section-content">
                         <!-- 브라우저/리더 토글 (Grobid 모드일 때만 표시) -->
@@ -1404,6 +1721,8 @@
                                 currentSection.paragraphs.push({
                                     id: `p_${para.id}`,
                                     text: para.text,
+                                    // 문장 단위 데이터 (서버에서 제공하면 저장)
+                                    sentences: para.sentences || [],
                                     // 다중 페이지를 위한 bboxes 배열
                                     bboxes: bboxes.map(bb => ({
                                         pageNum: bb.page,
@@ -1984,7 +2303,7 @@
         // ========== IndexedDB ==========
         let db = null;
         const DB_NAME = 'FocusReadDB';
-        const DB_VERSION = 3; // grobidCache 스토어 추가
+        const DB_VERSION = 4; // audioCache 스토어 추가
 
         async function openDB() {
             return new Promise((resolve, reject) => {
@@ -1997,6 +2316,7 @@
                     if (!d.objectStoreNames.contains('pdfData')) d.createObjectStore('pdfData', { keyPath: 'id' });
                     if (!d.objectStoreNames.contains('folders')) d.createObjectStore('folders', { keyPath: 'id' });
                     if (!d.objectStoreNames.contains('grobidCache')) d.createObjectStore('grobidCache', { keyPath: 'id' });
+                    if (!d.objectStoreNames.contains('audioCache')) d.createObjectStore('audioCache', { keyPath: 'id' });
                 };
             });
         }
@@ -2064,6 +2384,13 @@
         let sentences = [];
         let sentenceIndex = 0;
         let apiKey = localStorage.getItem('claude_api_key') || '';
+        let openaiApiKey = localStorage.getItem('openai_api_key') || '';
+        let ttsPlaying = false;
+        let ttsAudio = null;
+        let ttsCache = new Map(); // 문장별 오디오 메모리 캐시
+        let audioModeEnabled = false; // 오디오 모드 토글
+        let ttsSpeed = parseFloat(localStorage.getItem('tts_speed')) || 1.1; // TTS 속도
+        let audioGenerating = false; // 오디오 생성 중 상태
 
         // ========== Init ==========
         document.addEventListener('DOMContentLoaded', async () => {
@@ -2078,6 +2405,14 @@
             updateCounts();
             setupEvents();
             restoreCollapsedState();
+            
+            // TTS 속도 슬라이더 초기화
+            const speedSlider = document.getElementById('speed-slider');
+            const speedValue = document.getElementById('speed-value');
+            if (speedSlider && speedValue) {
+                speedSlider.value = ttsSpeed;
+                speedValue.textContent = ttsSpeed.toFixed(1) + 'x';
+            }
         });
 
         function setupEvents() {
@@ -2139,9 +2474,11 @@
 
             document.getElementById('notes-textarea').addEventListener('input', saveNote);
             document.getElementById('chat-input')?.addEventListener('keydown', e => {
+                if (e.isComposing) return; // IME 입력 중에는 무시
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
             });
             document.getElementById('claude-input')?.addEventListener('keydown', e => {
+                if (e.isComposing) return; // IME 입력 중에는 무시
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendClaudeChat(); }
             });
 
@@ -2281,6 +2618,7 @@
                         <div class="paper-meta">${formatDate(p.addedAt)}</div>
                         <div class="paper-folder">${folder ? '📁 ' + folder.name : '-'}</div>
                         <div class="paper-actions">
+                            <button class="audio-cache-btn" onclick="event.stopPropagation(); deleteAudioCache('${p.id}')" title="오디오 캐시 삭제">🔊</button>
                             <button class="delete-btn" onclick="event.stopPropagation(); deletePaper('${p.id}')">🗑️</button>
                         </div>
                     </div>
@@ -2485,6 +2823,9 @@
 
         // 논문 전환 시 UI 초기화
         function resetReaderUI() {
+            // TTS 정지
+            stopTTS();
+            
             // 선택 상태 초기화
             selectedSection = null;
             selectedParagraph = null;
@@ -2499,8 +2840,7 @@
             document.getElementById('notes-textarea').value = '';
             document.getElementById('notes-textarea').dataset.paraId = '';
             
-            // Claude 탭 초기화
-            unloadPdfFromClaude();
+            // Claude 탭은 세션 유지 (unloadPdfFromClaude 호출 안함)
             
             // PDF 오버레이 초기화
             clearSentenceOverlays();
@@ -2531,8 +2871,7 @@
             selectedParagraph = null;
             sentences = [];
             
-            // Claude 탭 초기화
-            unloadPdfFromClaude();
+            // Claude 탭 세션은 유지 (다른 논문 열 때 확인)
             
             renderPapers();
             updateCounts();
@@ -3068,6 +3407,10 @@
 
         // ========== Paragraph Selection ==========
         function selectParagraph(section, para, sentencePosition = 'first') {
+            // TTS 정지 및 캐시 클리어 (새 문단)
+            stopTTS();
+            ttsCache.clear();
+            
             // Visual update - PDF overlay (다중 페이지 지원: 같은 ID의 모든 블록 선택)
             document.querySelectorAll('.paragraph-block.selected').forEach(el => el.classList.remove('selected'));
             document.querySelectorAll(`.paragraph-block[data-para-id="${para.id}"]`).forEach(el => el.classList.add('selected'));
@@ -3352,6 +3695,11 @@
             });
             scrollToSentence();
             renderSentenceOverlay();
+            
+            // 오디오 모드가 켜져 있으면 현재 문장 재생
+            if (audioModeEnabled) {
+                playSentenceAudio(sentenceIndex);
+            }
         }
         
         function clearSentenceOverlays() {
@@ -3411,6 +3759,17 @@
             
             if (tab === 'notes') {
                 renderAllNotes();
+            }
+            
+            if (tab === 'claude') {
+                // 현재 논문이 이미 로드되어 있으면 채팅 UI 표시
+                if (claudeLoadedPaperId && claudeLoadedPaperId === currentPaper?.id && claudePdfBase64) {
+                    document.getElementById('claude-load-section').style.display = 'none';
+                    document.getElementById('claude-chat-section').style.display = 'flex';
+                } else {
+                    document.getElementById('claude-load-section').style.display = 'flex';
+                    document.getElementById('claude-chat-section').style.display = 'none';
+                }
             }
         }
 
@@ -3726,6 +4085,7 @@
         // ========== Claude Tab (Full PDF Context) ==========
         let claudePdfBase64 = null; // PDF 파일 Base64
         let claudeConversation = []; // 대화 히스토리
+        let claudeLoadedPaperId = null; // 현재 로드된 논문 ID
         
         async function loadPdfForClaude() {
             if (!currentPaper) {
@@ -3735,6 +4095,23 @@
             
             if (!currentPdfData) {
                 alert('PDF 데이터를 찾을 수 없습니다.');
+                return;
+            }
+            
+            // 이미 다른 논문이 로드되어 있는 경우
+            if (claudeLoadedPaperId && claudeLoadedPaperId !== currentPaper.id) {
+                const switchConfirmed = confirm(
+                    '⚠️ 다른 논문의 Claude 세션이 있습니다.\n\n' +
+                    '새 논문을 로드하면 기존 대화가 초기화됩니다.\n' +
+                    '계속하시겠습니까?'
+                );
+                if (!switchConfirmed) return;
+            }
+            
+            // 같은 논문이 이미 로드되어 있으면 바로 채팅 UI 표시
+            if (claudeLoadedPaperId === currentPaper.id && claudePdfBase64) {
+                document.getElementById('claude-load-section').style.display = 'none';
+                document.getElementById('claude-chat-section').style.display = 'flex';
                 return;
             }
             
@@ -3756,6 +4133,7 @@
                 const base64 = arrayBufferToBase64(currentPdfData);
                 claudePdfBase64 = base64;
                 claudeConversation = [];
+                claudeLoadedPaperId = currentPaper.id; // 로드된 논문 ID 저장
                 
                 // UI 전환
                 document.getElementById('claude-load-section').style.display = 'none';
@@ -3785,8 +4163,10 @@
         function unloadPdfFromClaude() {
             claudePdfBase64 = null;
             claudeConversation = [];
+            claudeLoadedPaperId = null;
             document.getElementById('claude-load-section').style.display = 'flex';
             document.getElementById('claude-chat-section').style.display = 'none';
+            document.getElementById('claude-messages').innerHTML = '<div class="chat-message assistant">논문이 로드되었습니다! 무엇이든 질문해 주세요. 🎓</div>';
         }
         
         async function sendClaudeChat() {
@@ -3897,6 +4277,402 @@
             apiKey = document.getElementById('api-key-input').value.trim();
             localStorage.setItem('claude_api_key', apiKey);
             closeModal('api-modal');
+        }
+        function saveOpenAIKey() {
+            openaiApiKey = document.getElementById('openai-api-key-input').value.trim();
+            localStorage.setItem('openai_api_key', openaiApiKey);
+            closeModal('openai-api-modal');
+        }
+        
+        // ========== TTS (OpenAI Text-to-Speech) ==========
+        
+        // 속도 업데이트
+        function updateTTSSpeed(value) {
+            ttsSpeed = parseFloat(value);
+            localStorage.setItem('tts_speed', ttsSpeed);
+            document.getElementById('speed-value').textContent = ttsSpeed.toFixed(1) + 'x';
+            
+            // 현재 재생 중이면 새 속도로 다시 재생 (캐시는 원본 속도)
+            if (ttsAudio) {
+                ttsAudio.playbackRate = ttsSpeed;
+            }
+        }
+        
+        // 오디오 모드 토글
+        function toggleAudioMode() {
+            if (!openaiApiKey) {
+                showModal('openai-api-modal');
+                return;
+            }
+            
+            audioModeEnabled = !audioModeEnabled;
+            updateAudioModeButton();
+            
+            // 속도 조절바 표시/숨김
+            const speedControl = document.getElementById('speed-control');
+            speedControl.style.display = audioModeEnabled ? 'flex' : 'none';
+            
+            if (audioModeEnabled && sentences.length > 0) {
+                playSentenceAudio(sentenceIndex);
+            } else {
+                stopTTS();
+            }
+        }
+        
+        function updateAudioModeButton() {
+            const btn = document.getElementById('audio-mode-btn');
+            if (audioModeEnabled) {
+                btn.textContent = '🔊';
+                btn.classList.add('audio-on');
+                btn.title = '오디오 모드 끄기';
+            } else {
+                btn.textContent = '🔇';
+                btn.classList.remove('audio-on');
+                btn.title = '오디오 모드 켜기';
+            }
+        }
+        
+        function stopTTS() {
+            ttsPlaying = false;
+            if (ttsAudio) {
+                ttsAudio.pause();
+                ttsAudio = null;
+            }
+        }
+        
+        // 전체 논문 오디오 생성
+        async function generateAllAudio() {
+            if (!openaiApiKey) {
+                showModal('openai-api-modal');
+                return;
+            }
+            
+            if (!currentPaper || !currentPaper.serverParsed || !currentPaper.sections) {
+                alert('Grobid로 분석된 논문을 먼저 열어주세요.');
+                return;
+            }
+            
+            // 모든 문장 수집 (sentences가 있으면 문장별, 없으면 문단 통째로)
+            const allSentences = [];
+            const sections = currentPaper.sections || [];
+            
+            for (const section of sections) {
+                for (const para of (section.paragraphs || [])) {
+                    // 문장 데이터가 있으면 문장별로 처리
+                    if (para.sentences && para.sentences.length > 0) {
+                        for (const sent of para.sentences) {
+                            const text = sent.text || sent;
+                            if (text && text.trim().length > 0) {
+                                allSentences.push({
+                                    text: text.trim(),
+                                    cacheKey: `${currentPaper.id}_${hashString(text.trim())}`
+                                });
+                            }
+                        }
+                    } else if (para.text && para.text.trim().length > 0) {
+                        // 문장 데이터가 없으면 문단 전체를 하나로
+                        allSentences.push({
+                            text: para.text.trim(),
+                            cacheKey: `${currentPaper.id}_${hashString(para.text.trim())}`
+                        });
+                    }
+                }
+            }
+            
+            if (allSentences.length === 0) {
+                alert('생성할 문장이 없습니다.');
+                return;
+            }
+            
+            // 이미 캐시된 문장 확인
+            const toGenerate = [];
+            for (const sent of allSentences) {
+                if (ttsCache.has(sent.cacheKey)) continue;
+                const dbCache = await dbGet('audioCache', sent.cacheKey);
+                if (dbCache) {
+                    ttsCache.set(sent.cacheKey, new Blob([dbCache.data], { type: 'audio/mpeg' }));
+                } else {
+                    toGenerate.push(sent);
+                }
+            }
+            
+            if (toGenerate.length === 0) {
+                alert('모든 오디오가 이미 생성되어 있습니다!');
+                enableAudioMode();
+                return;
+            }
+            
+            // 비용 계산 (OpenAI TTS: $15 / 1M characters, gpt-4o-mini-tts 기준)
+            const totalChars = toGenerate.reduce((sum, s) => sum + s.text.length, 0);
+            const estimatedCost = (totalChars * 15 / 1000000).toFixed(4);
+            const avgCharsPerSentence = Math.round(totalChars / toGenerate.length);
+            
+            const confirmed = confirm(
+                `🎙️ 전체 오디오 생성\n\n` +
+                `• 총 문장: ${allSentences.length}개\n` +
+                `• 생성 필요: ${toGenerate.length}개 (캐시: ${allSentences.length - toGenerate.length}개)\n` +
+                `• 총 글자 수: ${totalChars.toLocaleString()}자 (평균 ${avgCharsPerSentence}자/문장)\n` +
+                `• 예상 총 비용: ~$${estimatedCost} (약 ${Math.round(estimatedCost * 1400)}원)\n\n` +
+                `진행하시겠습니까?`
+            );
+            
+            if (!confirmed) return;
+            
+            // UI 업데이트 - 생성 중 상태
+            audioGenerating = true;
+            const genBtn = document.getElementById('generate-audio-btn');
+            genBtn.classList.add('generating');
+            genBtn.disabled = true;
+            
+            // 프로그레스 바 표시
+            showAudioProgress(0, toGenerate.length);
+            
+            let generated = 0;
+            let errors = 0;
+            
+            // 순차적으로 생성 (API rate limit 고려)
+            for (const sent of toGenerate) {
+                try {
+                    const response = await fetch('https://api.openai.com/v1/audio/speech', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${openaiApiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: 'gpt-4o-mini-tts',
+                            input: sent.text,
+                            voice: 'cedar',
+                            speed: 1.0 // 원본 속도로 저장, 재생 시 조절
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const err = await response.json().catch(() => ({}));
+                        throw new Error(err.error?.message || `API 오류: ${response.status}`);
+                    }
+                    
+                    const audioBlob = await response.blob();
+                    ttsCache.set(sent.cacheKey, audioBlob);
+                    
+                    // DB에 저장
+                    const arrayBuffer = await audioBlob.arrayBuffer();
+                    await dbPut('audioCache', {
+                        id: sent.cacheKey,
+                        paperId: currentPaper.id,
+                        data: new Uint8Array(arrayBuffer)
+                    });
+                    
+                    generated++;
+                    updateAudioProgress(generated, toGenerate.length);
+                    
+                } catch (err) {
+                    console.error('TTS generation error:', err);
+                    errors++;
+                    
+                    // rate limit이면 잠시 대기
+                    if (err.message.includes('rate')) {
+                        await new Promise(r => setTimeout(r, 2000));
+                    }
+                }
+                
+                // 약간의 딜레이 (rate limit 방지)
+                await new Promise(r => setTimeout(r, 100));
+            }
+            
+            // 완료
+            audioGenerating = false;
+            genBtn.classList.remove('generating');
+            genBtn.disabled = false;
+            hideAudioProgress();
+            
+            if (errors > 0) {
+                alert(`생성 완료!\n성공: ${generated}개, 실패: ${errors}개`);
+            } else {
+                alert(`✅ ${generated}개 오디오 생성 완료!`);
+            }
+            
+            // 오디오 모드 활성화
+            enableAudioMode();
+        }
+        
+        // 문자열 해시 (캐시 키용)
+        function hashString(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            return Math.abs(hash).toString(36);
+        }
+        
+        // 오디오 모드 활성화
+        function enableAudioMode() {
+            const btn = document.getElementById('audio-mode-btn');
+            btn.disabled = false;
+            
+            // 자동으로 오디오 모드 켜기
+            if (!audioModeEnabled) {
+                audioModeEnabled = true;
+                updateAudioModeButton();
+                document.getElementById('speed-control').style.display = 'flex';
+            }
+        }
+        
+        // 프로그레스 UI
+        function showAudioProgress(current, total) {
+            let container = document.getElementById('audio-progress');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'audio-progress';
+                container.className = 'audio-progress';
+                container.innerHTML = `
+                    <div class="dog-musician">
+                        <div class="dog-container">
+                            <div class="dog-ear-left"></div>
+                            <div class="dog-ear-right"></div>
+                            <div class="dog-head">
+                                <div class="dog-eye-left"></div>
+                                <div class="dog-eye-right"></div>
+                                <div class="dog-nose"></div>
+                            </div>
+                            <div class="dog-body"></div>
+                            <div class="dog-arm-left"></div>
+                            <div class="dog-arm-right"></div>
+                            <div class="violin"></div>
+                            <div class="bow"></div>
+                            <div class="music-notes">
+                                <span class="note">♪</span>
+                                <span class="note">♫</span>
+                                <span class="note">♪</span>
+                            </div>
+                        </div>
+                        <span class="dog-message">열심히 오디오를 만들고 있어요...</span>
+                    </div>
+                    <div class="audio-progress-top">
+                        <div class="audio-progress-bar">
+                            <div class="audio-progress-fill" id="audio-progress-fill"></div>
+                        </div>
+                        <span class="audio-progress-text" id="audio-progress-text">0 / 0</span>
+                    </div>
+                `;
+                const content = document.getElementById('paragraph-content');
+                content.parentNode.insertBefore(container, content);
+            }
+            container.style.display = 'flex';
+            updateAudioProgress(current, total);
+        }
+        
+        function updateAudioProgress(current, total) {
+            const fill = document.getElementById('audio-progress-fill');
+            const text = document.getElementById('audio-progress-text');
+            const message = document.querySelector('.dog-message');
+            if (fill && text) {
+                const percent = (current / total) * 100;
+                fill.style.width = percent + '%';
+                text.textContent = `${current} / ${total} 문장`;
+                
+                // 진행 상황에 따라 메시지 변경
+                if (message) {
+                    if (percent < 25) {
+                        message.textContent = '🎵 열심히 오디오를 만들고 있어요...';
+                    } else if (percent < 50) {
+                        message.textContent = '🎶 벌써 4분의 1이나 완성했어요!';
+                    } else if (percent < 75) {
+                        message.textContent = '🎻 반 이상 완료! 조금만 더요~';
+                    } else if (percent < 100) {
+                        message.textContent = '✨ 거의 다 됐어요! 조금만 기다려주세요!';
+                    } else {
+                        message.textContent = '🎉 완성! 이제 들을 준비 끝!';
+                    }
+                }
+            }
+        }
+        
+        function hideAudioProgress() {
+            const container = document.getElementById('audio-progress');
+            if (container) {
+                container.style.display = 'none';
+            }
+        }
+        
+        // 특정 문장 재생 (캐시된 오디오만)
+        async function playSentenceAudio(index) {
+            if (!audioModeEnabled || !currentPaper || index >= sentences.length) return;
+            
+            stopTTS();
+            
+            const sentence = sentences[index];
+            const text = (sentence.text || sentence).trim();
+            const cacheKey = `${currentPaper.id}_${hashString(text)}`;
+            
+            try {
+                let audioBlob;
+                
+                // 메모리 캐시 확인
+                if (ttsCache.has(cacheKey)) {
+                    audioBlob = ttsCache.get(cacheKey);
+                } else {
+                    // DB 캐시 확인
+                    const dbCache = await dbGet('audioCache', cacheKey);
+                    if (dbCache) {
+                        audioBlob = new Blob([dbCache.data], { type: 'audio/mpeg' });
+                        ttsCache.set(cacheKey, audioBlob);
+                    } else {
+                        // 캐시 없음 - 생성 안 됨
+                        console.log('⚠️ No cached audio for this sentence');
+                        return;
+                    }
+                }
+                
+                // 재생
+                const audioUrl = URL.createObjectURL(audioBlob);
+                ttsAudio = new Audio(audioUrl);
+                ttsAudio.playbackRate = ttsSpeed;
+                ttsPlaying = true;
+                
+                ttsAudio.onended = () => {
+                    URL.revokeObjectURL(audioUrl);
+                    ttsPlaying = false;
+                };
+                ttsAudio.onerror = () => {
+                    console.error('Audio playback error');
+                    ttsPlaying = false;
+                };
+                
+                await ttsAudio.play();
+                
+            } catch (err) {
+                console.error('TTS playback error:', err);
+            }
+        }
+        
+        // 논문별 오디오 캐시 삭제
+        async function deleteAudioCache(paperId) {
+            const confirmed = confirm('이 논문의 오디오 캐시를 삭제하시겠습니까?');
+            if (!confirmed) return;
+            
+            try {
+                const allCache = await dbGetAll('audioCache');
+                const toDelete = allCache.filter(c => c.paperId === paperId);
+                
+                for (const cache of toDelete) {
+                    await dbDelete('audioCache', cache.id);
+                }
+                
+                // 메모리 캐시도 클리어
+                for (const key of ttsCache.keys()) {
+                    if (key.startsWith(paperId + '_')) {
+                        ttsCache.delete(key);
+                    }
+                }
+                
+                alert(`${toDelete.length}개의 오디오 캐시가 삭제되었습니다.`);
+            } catch (err) {
+                console.error('Delete audio cache error:', err);
+                alert('삭제 실패: ' + err.message);
+            }
         }
         
         // ========== Collapsible Sections ==========
