@@ -1,0 +1,14 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+RUN pip install --no-cache-dir fastapi uvicorn spacy httpx pydantic python-multipart
+RUN python -m spacy download en_core_web_sm
+
+# Copy server file
+COPY server_grobid_v2.py .
+
+EXPOSE 8000
+
+CMD ["uvicorn", "server_grobid_v2:app", "--host", "0.0.0.0", "--port", "8000"]

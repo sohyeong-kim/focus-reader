@@ -1,0 +1,29 @@
+services:
+  # GROBID - PDF 논문 파싱 (포트 8070)
+  grobid:
+    image: lfoppiano/grobid:0.8.0
+    ports:
+      - "8070:8070"
+    restart: unless-stopped
+
+  # spaCy 청킹 서버 (포트 8000)
+  spacy:
+    build:
+      context: .
+      dockerfile: Dockerfile.spacy
+    ports:
+      - "8000:8000"
+    depends_on:
+      - grobid
+    environment:
+      - GROBID_URL=http://grobid:8070/api/processFulltextDocument
+    restart: unless-stopped
+
+  # Kokoro TTS 서버 (포트 8001) - 무료 로컬 TTS
+  kokoro:
+    build:
+      context: .
+      dockerfile: Dockerfile.kokoro
+    ports:
+      - "8001:8001"
+    restart: unless-stopped

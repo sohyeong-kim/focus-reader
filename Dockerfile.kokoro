@@ -1,0 +1,28 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# 시스템 의존성 설치 (espeak-ng 필수)
+RUN apt-get update && apt-get install -y \
+    libsndfile1 \
+    espeak-ng \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# PyTorch CPU 버전 먼저 설치
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
+# 나머지 Python 패키지 설치
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    kokoro>=0.9.2 \
+    soundfile \
+    numpy
+
+# 서버 코드 복사
+COPY server_kokoro.py .
+
+EXPOSE 8001
+
+CMD ["uvicorn", "server_kokoro:app", "--host", "0.0.0.0", "--port", "8001"]

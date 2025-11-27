@@ -25,7 +25,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-GROBID_URL = "http://localhost:8070/api/processFulltextDocument"
+import os
+GROBID_URL = os.getenv("GROBID_URL", "http://localhost:8070/api/processFulltextDocument")
 
 # TEI namespace
 NS = {'tei': 'http://www.tei-c.org/ns/1.0'}

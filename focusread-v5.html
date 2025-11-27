@@ -60,7 +60,33 @@
             white-space: nowrap;
         }
 
-        .header-actions { display: flex; gap: 8px; -webkit-app-region: no-drag; }
+        .header-actions { display: flex; gap: 8px; align-items: center; -webkit-app-region: no-drag; }
+
+        .lang-selector {
+            display: flex;
+            gap: 2px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            padding: 2px;
+            margin-right: 8px;
+        }
+        .lang-btn {
+            padding: 4px 8px;
+            font-size: 11px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.15s;
+        }
+        .lang-btn:hover {
+            color: var(--text-primary);
+        }
+        .lang-btn.active {
+            background: var(--accent-purple);
+            color: white;
+        }
 
         .btn {
             background: var(--bg-tertiary);
@@ -1468,6 +1494,12 @@
         }
         .modal-input:focus { outline: none; border-color: var(--accent-blue); }
         .modal-buttons { display: flex; gap: 8px; justify-content: flex-end; }
+        
+        /* TTS 선택 옵션 스타일 */
+        .tts-option:hover { 
+            border-color: var(--accent-blue) !important; 
+            background: var(--bg-tertiary);
+        }
 
         /* Drop Zone */
         .drop-zone {
@@ -1568,168 +1600,347 @@
             color: var(--text-muted);
         }
 
-        /* Pomodoro Timer in Reader */
-        .pomodoro-timer-widget {
-            position: fixed;
-            top: 60px;
-            right: 420px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 12px 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            z-index: 100;
+        /* Pomodoro Timer in Toolbar - 심플 버전 */
+        .pomodoro-toolbar-timer {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
+            padding: 4px 10px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 6px;
+            margin-left: auto;
         }
-        .pomodoro-timer-display {
+        .pomodoro-toolbar-timer.hidden {
+            display: none;
+        }
+        .pomodoro-toolbar-time {
             font-family: 'IBM Plex Mono', monospace;
-            font-size: 24px;
-            font-weight: 600;
-            color: var(--text-primary);
-            min-width: 70px;
-            text-align: center;
-        }
-        .pomodoro-timer-display.focus { color: #ef4444; }
-        .pomodoro-timer-display.break { color: var(--accent-green); }
-        .pomodoro-timer-label {
-            font-size: 11px;
+            font-size: 13px;
+            font-weight: 500;
             color: var(--text-muted);
-            text-transform: uppercase;
+            min-width: 45px;
         }
-        .pomodoro-timer-btn {
-            width: 36px;
-            height: 36px;
+        .pomodoro-toolbar-time.focus {
+            color: #ef4444;
+        }
+        .pomodoro-toolbar-time.break {
+            color: var(--accent-green);
+        }
+        .pomodoro-toolbar-time.running {
+            color: var(--text-primary);
+        }
+        .pomodoro-toolbar-btn {
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             border: none;
-            background: var(--accent-blue);
-            color: white;
-            font-size: 16px;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-size: 10px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.15s;
         }
-        .pomodoro-timer-btn:hover { transform: scale(1.1); }
-        .pomodoro-timer-btn.pause { background: var(--accent-orange); }
-        .pomodoro-timer-btn.stop { background: var(--text-muted); font-size: 12px; }
+        .pomodoro-toolbar-btn:hover {
+            background: var(--accent-blue);
+            color: white;
+        }
+        .pomodoro-toolbar-btn.playing {
+            background: var(--accent-orange);
+            color: white;
+        }
 
-        /* Pomodoro Animation Overlay */
-        .pomodoro-overlay {
+        /* Pomodoro Toast Popup - 오디오 생성 스타일 */
+        .pomodoro-toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 32px 48px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 10000;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        .pomodoro-toast.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+        .pomodoro-toast-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        .pomodoro-toast-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .pomodoro-toast-sub {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .pomodoro-toast-tomatoes {
+            font-size: 28px;
+            letter-spacing: 4px;
+            margin-top: 8px;
+        }
+        .pomodoro-toast-backdrop {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.85);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
+            background: rgba(0,0,0,0.4);
+            z-index: 9999;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s;
         }
-        .pomodoro-overlay.show {
+        .pomodoro-toast-backdrop.show {
             opacity: 1;
-            pointer-events: auto;
         }
-        .pomodoro-animation {
-            width: 300px;
-            height: 300px;
+
+        /* 토마토 먹는 강아지 */
+        .dog-eating {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            gap: 8px;
+        }
+        .dog-eating .dog-container {
             position: relative;
+            width: 100px;
+            height: 90px;
         }
-        .pomodoro-dog {
-            font-size: 120px;
-            animation: bounce 0.5s ease infinite alternate;
-        }
-        .pomodoro-tomatoes-juggle {
+        .dog-eating .dog-body {
             position: absolute;
-            font-size: 50px;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 45px;
+            background: #d4a574;
+            border-radius: 50% 50% 45% 45%;
         }
-        .pomodoro-tomato-1 { animation: juggle1 1s ease-in-out infinite; }
-        .pomodoro-tomato-2 { animation: juggle2 1s ease-in-out infinite 0.33s; }
-        .pomodoro-tomato-3 { animation: juggle3 1s ease-in-out infinite 0.66s; }
-        @keyframes bounce {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-15px); }
-        }
-        @keyframes juggle1 {
-            0%, 100% { transform: translate(-80px, 0); }
-            50% { transform: translate(-80px, -120px); }
-        }
-        @keyframes juggle2 {
-            0%, 100% { transform: translate(0, -60px); }
-            50% { transform: translate(0, -180px); }
-        }
-        @keyframes juggle3 {
-            0%, 100% { transform: translate(80px, 0); }
-            50% { transform: translate(80px, -120px); }
-        }
-        .pomodoro-dog-sleeping {
-            font-size: 120px;
-            animation: sleep 2s ease infinite;
-        }
-        @keyframes sleep {
-            0%, 100% { transform: rotate(-5deg); }
-            50% { transform: rotate(5deg); }
-        }
-        .pomodoro-zzz {
+        .dog-eating .dog-head {
             position: absolute;
-            font-size: 40px;
-            animation: zzz 1.5s ease-in-out infinite;
-            top: -30px;
-            right: -30px;
+            bottom: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 42px;
+            height: 36px;
+            background: #d4a574;
+            border-radius: 50% 50% 45% 45%;
+            animation: eating-head 0.4s ease-in-out infinite;
         }
-        @keyframes zzz {
-            0%, 100% { opacity: 0.3; transform: translateY(0) scale(0.8); }
-            50% { opacity: 1; transform: translateY(-20px) scale(1.2); }
+        @keyframes eating-head {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(5px); }
         }
-        .pomodoro-wakeup {
-            font-size: 120px;
-            animation: wakeup 0.5s ease forwards;
+        .dog-eating .dog-ear-left, .dog-eating .dog-ear-right {
+            position: absolute;
+            bottom: 62px;
+            width: 14px;
+            height: 22px;
+            background: #c49464;
+            border-radius: 50% 50% 40% 40%;
         }
-        @keyframes wakeup {
-            0% { transform: rotate(-10deg) scale(0.9); }
-            50% { transform: rotate(10deg) scale(1.1); }
-            100% { transform: rotate(0) scale(1); }
+        .dog-eating .dog-ear-left { left: 22px; transform: rotate(-15deg); }
+        .dog-eating .dog-ear-right { right: 22px; transform: rotate(15deg); }
+        .dog-eating .dog-eye-left, .dog-eating .dog-eye-right {
+            position: absolute;
+            top: 10px;
+            width: 4px;
+            height: 2px;
+            background: #333;
+            border-radius: 50%;
         }
-        .pomodoro-message {
-            font-size: 24px;
-            font-weight: 600;
-            color: white;
-            margin-top: 20px;
-            text-align: center;
+        .dog-eating .dog-eye-left { left: 10px; }
+        .dog-eating .dog-eye-right { right: 10px; }
+        .dog-eating .dog-nose {
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 6px;
+            background: #333;
+            border-radius: 50%;
         }
-        .pomodoro-sub-message {
-            font-size: 14px;
-            color: rgba(255,255,255,0.7);
-            margin-top: 8px;
+        .dog-eating .dog-mouth {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 8px;
+            background: #ff6b6b;
+            border-radius: 0 0 50% 50%;
+            animation: eating-mouth 0.2s ease-in-out infinite;
         }
-        .pomodoro-overlay-btn {
-            margin-top: 30px;
-            padding: 12px 32px;
-            font-size: 16px;
-            font-weight: 500;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.15s;
+        @keyframes eating-mouth {
+            0%, 100% { height: 8px; }
+            50% { height: 4px; }
         }
-        .pomodoro-overlay-btn:hover { transform: scale(1.05); }
-        .pomodoro-overlay-btn.break-btn {
-            background: var(--accent-green);
-            color: white;
+        .dog-eating .tomato {
+            position: absolute;
+            bottom: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 28px;
+            animation: tomato-bounce 0.4s ease-in-out infinite;
         }
-        .pomodoro-overlay-btn.focus-btn {
-            background: var(--accent-blue);
-            color: white;
+        @keyframes tomato-bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0) scale(1); }
+            50% { transform: translateX(-50%) translateY(-5px) scale(0.95); }
+        }
+        .dog-eating .dog-tail {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 8px;
+            height: 20px;
+            background: #c49464;
+            border-radius: 4px;
+            transform-origin: bottom center;
+            animation: tail-wag 0.3s ease-in-out infinite;
+        }
+        @keyframes tail-wag {
+            0%, 100% { transform: rotate(-20deg); }
+            50% { transform: rotate(20deg); }
+        }
+        .dog-eating-message {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        /* 자다가 일어나는 강아지 */
+        .dog-waking {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .dog-waking .dog-container {
+            position: relative;
+            width: 100px;
+            height: 90px;
+        }
+        .dog-waking .dog-body {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 45px;
+            background: #d4a574;
+            border-radius: 50% 50% 45% 45%;
+        }
+        .dog-waking .dog-head {
+            position: absolute;
+            bottom: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 42px;
+            height: 36px;
+            background: #d4a574;
+            border-radius: 50% 50% 45% 45%;
+            animation: waking-head 0.5s ease-in-out;
+        }
+        @keyframes waking-head {
+            0% { transform: translateX(-50%) rotate(-10deg); }
+            30% { transform: translateX(-50%) rotate(5deg); }
+            60% { transform: translateX(-50%) rotate(-3deg); }
+            100% { transform: translateX(-50%) rotate(0deg); }
+        }
+        .dog-waking .dog-ear-left, .dog-waking .dog-ear-right {
+            position: absolute;
+            bottom: 62px;
+            width: 14px;
+            height: 22px;
+            background: #c49464;
+            border-radius: 50% 50% 40% 40%;
+        }
+        .dog-waking .dog-ear-left { left: 22px; transform: rotate(-15deg); }
+        .dog-waking .dog-ear-right { right: 22px; transform: rotate(15deg); }
+        .dog-waking .dog-eye-left, .dog-waking .dog-eye-right {
+            position: absolute;
+            top: 10px;
+            width: 6px;
+            height: 6px;
+            background: #333;
+            border-radius: 50%;
+            animation: eyes-open 0.8s ease-out forwards;
+        }
+        @keyframes eyes-open {
+            0% { height: 2px; }
+            50% { height: 3px; }
+            100% { height: 6px; }
+        }
+        .dog-waking .dog-eye-left { left: 10px; }
+        .dog-waking .dog-eye-right { right: 10px; }
+        .dog-waking .dog-nose {
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 6px;
+            background: #333;
+            border-radius: 50%;
+        }
+        .dog-waking .dog-mouth {
+            position: absolute;
+            bottom: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 8px;
+            border: 2px solid #333;
+            border-top: none;
+            border-radius: 0 0 50% 50%;
+            background: transparent;
+            animation: yawn 1s ease-in-out;
+        }
+        @keyframes yawn {
+            0%, 100% { width: 10px; height: 5px; }
+            50% { width: 18px; height: 12px; }
+        }
+        .dog-waking .zzz {
+            position: absolute;
+            top: -10px;
+            right: 5px;
+            font-size: 20px;
+            animation: zzz-fade 1s ease-out forwards;
+        }
+        @keyframes zzz-fade {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        .dog-waking .dog-tail {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 8px;
+            height: 20px;
+            background: #c49464;
+            border-radius: 4px;
+            transform-origin: bottom center;
+            animation: tail-wag-slow 0.5s ease-in-out infinite;
+        }
+        @keyframes tail-wag-slow {
+            0%, 100% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
         }
 
         /* Pomodoro Settings Modal */
@@ -1794,6 +2005,29 @@
         </div>
     </div>
 
+    <!-- TTS 선택 모달 -->
+    <div class="modal-overlay" id="tts-select-modal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-title">🎙️ TTS 엔진 선택</div>
+            <div style="margin-bottom: 16px;">
+                <div class="tts-option" onclick="selectTTSEngine('kokoro')" style="padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; cursor: pointer; margin-bottom: 8px; transition: all 0.15s;">
+                    <div style="font-weight: 600; margin-bottom: 4px;">🆓 Kokoro TTS (로컬)</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">무료 • 로컬에서 실행 • 빠름</div>
+                    <div style="font-size: 11px; color: var(--accent-green); margin-top: 4px;">💰 비용: $0</div>
+                </div>
+                <div class="tts-option" onclick="selectTTSEngine('openai')" style="padding: 12px; border: 2px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.15s;">
+                    <div style="font-weight: 600; margin-bottom: 4px;">⭐ OpenAI TTS (클라우드)</div>
+                    <div style="font-size: 12px; color: var(--text-secondary);">최고 품질 • API 키 필요</div>
+                    <div style="font-size: 11px; color: var(--accent-orange); margin-top: 4px;" id="tts-cost-estimate">💰 예상 비용: 계산 중...</div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" onclick="closeModal('tts-select-modal')">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 새 폴더 모달 -->
     <div class="modal-overlay" id="folder-modal">
         <div class="modal">
             <div class="modal-title">📁 새 폴더</div>
@@ -1832,22 +2066,30 @@
         </div>
     </div>
 
-    <!-- Pomodoro Timer Widget (for Reader View) -->
-    <div class="pomodoro-timer-widget" id="pomodoro-timer-widget" style="display:none;">
-        <div>
-            <div class="pomodoro-timer-label" id="pomodoro-timer-label">집중</div>
-            <div class="pomodoro-timer-display focus" id="pomodoro-timer-display">25:00</div>
+    <!-- Pomodoro Toast Popup -->
+    <div class="pomodoro-toast-backdrop" id="pomodoro-toast-backdrop"></div>
+    <div class="pomodoro-toast" id="pomodoro-toast">
+        <div class="pomodoro-toast-content">
+            <div class="dog-eating" id="pomodoro-dog-animation">
+                <div class="dog-container">
+                    <div class="dog-body"></div>
+                    <div class="dog-head">
+                        <div class="dog-eye-left"></div>
+                        <div class="dog-eye-right"></div>
+                        <div class="dog-nose"></div>
+                        <div class="dog-mouth"></div>
+                    </div>
+                    <div class="dog-ear-left"></div>
+                    <div class="dog-ear-right"></div>
+                    <div class="tomato">🍅</div>
+                    <div class="dog-tail"></div>
+                </div>
+                <div class="dog-eating-message">냠냠... 맛있다!</div>
+            </div>
+            <div class="pomodoro-toast-title" id="pomodoro-toast-title">집중 세션 완료!</div>
+            <div class="pomodoro-toast-sub" id="pomodoro-toast-sub">오늘 1번째 뽀모도로 달성!</div>
+            <div class="pomodoro-toast-tomatoes" id="pomodoro-toast-tomatoes">🍅</div>
         </div>
-        <button class="pomodoro-timer-btn" id="pomodoro-play-btn" onclick="togglePomodoro()">▶</button>
-        <button class="pomodoro-timer-btn stop" id="pomodoro-stop-btn" onclick="stopPomodoro()" style="display:none;">■</button>
-    </div>
-
-    <!-- Pomodoro Animation Overlay -->
-    <div class="pomodoro-overlay" id="pomodoro-overlay">
-        <div class="pomodoro-animation" id="pomodoro-animation"></div>
-        <div class="pomodoro-message" id="pomodoro-message"></div>
-        <div class="pomodoro-sub-message" id="pomodoro-sub-message"></div>
-        <button class="pomodoro-overlay-btn" id="pomodoro-overlay-btn" onclick="handlePomodoroOverlayClick()"></button>
     </div>
 
     <div class="drop-zone" id="drop-zone">
@@ -1861,6 +2103,10 @@
     <header class="header">
         <div class="header-title" id="header-title">FocusRead</div>
         <div class="header-actions">
+            <div class="lang-selector">
+                <button class="lang-btn" data-lang="ko" onclick="setLanguage('ko')">한국어</button>
+                <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">ENG</button>
+            </div>
             <button class="btn" id="back-btn" style="display:none" onclick="backToLibrary()">← 라이브러리</button>
             <button class="btn" onclick="showModal('api-modal')">🔑 API</button>
         </div>
@@ -1901,16 +2147,16 @@
                 <div class="library-search">
                     <input type="text" placeholder="검색..." id="search-input" oninput="renderPapers()">
                 </div>
-                <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
+                <button class="btn btn-primary" id="add-paper-btn" onclick="document.getElementById('file-input').click()">
                     ➕ 논문 추가
                 </button>
             </div>
             <div class="paper-list">
                 <div class="paper-list-header">
-                    <span>제목</span>
-                    <span>저자</span>
-                    <span>추가일</span>
-                    <span>폴더</span>
+                    <span id="header-title-col">제목</span>
+                    <span id="header-author-col">저자</span>
+                    <span id="header-date-col">추가일</span>
+                    <span id="header-folder-col">폴더</span>
                     <span></span>
                 </div>
                 <div id="paper-list-content"></div>
@@ -1930,7 +2176,12 @@
                 <button class="btn" onclick="zoomFit()">맞춤</button>
                 <span id="parse-status" style="margin-left: 12px; font-size: 11px; padding: 4px 8px; border-radius: 4px; background: var(--bg-tertiary);"></span>
                 <button class="btn" id="debug-btn" onclick="toggleDebug()">🐛 Debug</button>
-                <button class="btn" id="pomodoro-start-btn" onclick="showPomodoroTimer()" style="margin-left: auto;">🍅 뽀모도로</button>
+                <!-- Pomodoro Timer in Toolbar -->
+                <div class="pomodoro-toolbar-timer" id="pomodoro-toolbar-timer">
+                    <span class="pomodoro-toolbar-time" id="pomodoro-toolbar-time">25:00</span>
+                    <button class="pomodoro-toolbar-btn" id="pomodoro-play-btn" onclick="togglePomodoro()" title="시작/일시정지">▶</button>
+                    <button class="pomodoro-toolbar-btn" id="pomodoro-stop-btn" onclick="stopPomodoro()" title="정지" style="display:none;">■</button>
+                </div>
             </div>
             <div class="pdf-container" id="pdf-container"></div>
         </div>
@@ -1949,6 +2200,7 @@
                     <div class="section-header" onclick="toggleSection('paragraph-section')">
                         <span><span class="collapse-icon">▼</span><span class="section-title">📖 문단 리더</span></span>
                         <div class="section-header-right" onclick="event.stopPropagation();">
+                            <button class="btn tts-btn" id="tts-engine-btn" onclick="changeTTSEngine()" title="TTS 엔진 변경" style="font-size: 10px; padding: 2px 6px;">🎙️</button>
                             <button class="btn tts-btn" id="generate-audio-btn" onclick="generateAllAudio()" title="전체 오디오 생성">🎙️</button>
                             <button class="btn tts-btn" id="audio-mode-btn" onclick="toggleAudioMode()" title="오디오 모드" disabled>🔇</button>
                             <div class="speed-control" id="speed-control" style="display:none;">
@@ -2844,6 +3096,218 @@
         let audioModeEnabled = false; // 오디오 모드 토글
         let ttsSpeed = parseFloat(localStorage.getItem('tts_speed')) || 1.7; // TTS 속도
         let audioGenerating = false; // 오디오 생성 중 상태
+        let selectedTTSEngine = localStorage.getItem('tts_engine') || null; // 'openai' or 'kokoro'
+        let pendingTTSAction = null; // 'generate' or 'toggle'
+        let currentLang = localStorage.getItem('app_language') || 'ko'; // 'ko' or 'en'
+
+        // 다국어 번역 데이터
+        const translations = {
+            ko: {
+                // Header
+                backToLibrary: '← 라이브러리',
+                apiKey: '🔑 API',
+                // Sidebar
+                library: '라이브러리',
+                allPapers: '전체 논문',
+                recentRead: '최근 읽은',
+                folders: '폴더',
+                newFolder: '➕ 새 폴더',
+                todayPomodoro: '🍅 오늘의 뽀모도로',
+                noPomodoroYet: '아직 완료한 세션이 없어요',
+                // Library
+                searchPlaceholder: '검색...',
+                addPaper: '➕ 논문 추가',
+                dropHere: '📂 PDF 파일을 여기에 드래그하거나 클릭하여 추가',
+                noPapers: '논문이 없습니다',
+                // Table headers
+                title: '제목',
+                author: '저자',
+                dateAdded: '추가일',
+                folder: '폴더',
+                // Paper view
+                analysisInfo: '📊 분석 정보',
+                paragraphs: '문단',
+                sentences: '문장',
+                characters: '글자',
+                sections: '섹션',
+                paragraphReader: '📖 문단 리더',
+                generateAudio: '전체 오디오 생성',
+                audioMode: '오디오 모드',
+                sentenceMove: '문장 이동',
+                sectionBrowser: '📑 섹션',
+                reader: '📖 리더',
+                // Modals
+                claudeApiKey: 'Claude API 키',
+                openaiApiKey: 'OpenAI API 키',
+                cancel: '취소',
+                save: '저장',
+                newFolderTitle: '📁 새 폴더',
+                folderName: '폴더 이름',
+                create: '생성',
+                // TTS
+                ttsEngineSelect: '🎙️ TTS 엔진 선택',
+                kokoroTTS: '🆓 Kokoro TTS (로컬)',
+                kokoroDesc: '무료 • 로컬에서 실행 • 빠름',
+                openaiTTS: '⭐ OpenAI TTS (클라우드)',
+                openaiDesc: '최고 품질 • API 키 필요',
+                cost: '비용',
+                free: '무료',
+                estimatedCost: '예상 비용',
+                // Pomodoro
+                pomodoroSettings: '🍅 뽀모도로 설정',
+                focusTime: '집중 시간',
+                breakTime: '휴식 시간',
+                minutes: '분',
+                // Audio
+                generatingAudio: '오디오 생성 중...',
+                audioComplete: '완료!',
+                cached: '캐시',
+                saved: '절약',
+                // Actions
+                delete: '삭제',
+                move: '이동',
+                rename: '이름 변경',
+                // Status
+                analyzing: '분석 중...',
+                loading: '로딩 중...',
+                error: '오류',
+                success: '성공'
+            },
+            en: {
+                // Header
+                backToLibrary: '← Library',
+                apiKey: '🔑 API',
+                // Sidebar
+                library: 'Library',
+                allPapers: 'All Papers',
+                recentRead: 'Recently Read',
+                folders: 'Folders',
+                newFolder: '➕ New Folder',
+                todayPomodoro: '🍅 Today\'s Pomodoro',
+                noPomodoroYet: 'No sessions completed yet',
+                // Library
+                searchPlaceholder: 'Search...',
+                addPaper: '➕ Add Paper',
+                dropHere: '📂 Drag PDF here or click to add',
+                noPapers: 'No papers',
+                // Table headers
+                title: 'Title',
+                author: 'Author',
+                dateAdded: 'Added',
+                folder: 'Folder',
+                // Paper view
+                analysisInfo: '📊 Analysis Info',
+                paragraphs: 'Paragraphs',
+                sentences: 'Sentences',
+                characters: 'Characters',
+                sections: 'Sections',
+                paragraphReader: '📖 Paragraph Reader',
+                generateAudio: 'Generate All Audio',
+                audioMode: 'Audio Mode',
+                sentenceMove: 'Move Sentence',
+                sectionBrowser: '📑 Sections',
+                reader: '📖 Reader',
+                // Modals
+                claudeApiKey: 'Claude API Key',
+                openaiApiKey: 'OpenAI API Key',
+                cancel: 'Cancel',
+                save: 'Save',
+                newFolderTitle: '📁 New Folder',
+                folderName: 'Folder name',
+                create: 'Create',
+                // TTS
+                ttsEngineSelect: '🎙️ Select TTS Engine',
+                kokoroTTS: '🆓 Kokoro TTS (Local)',
+                kokoroDesc: 'Free • Runs locally • Fast',
+                openaiTTS: '⭐ OpenAI TTS (Cloud)',
+                openaiDesc: 'Best quality • API key required',
+                cost: 'Cost',
+                free: 'Free',
+                estimatedCost: 'Est. cost',
+                // Pomodoro
+                pomodoroSettings: '🍅 Pomodoro Settings',
+                focusTime: 'Focus Time',
+                breakTime: 'Break Time',
+                minutes: 'min',
+                // Audio
+                generatingAudio: 'Generating audio...',
+                audioComplete: 'Complete!',
+                cached: 'cached',
+                saved: 'saved',
+                // Actions
+                delete: 'Delete',
+                move: 'Move',
+                rename: 'Rename',
+                // Status
+                analyzing: 'Analyzing...',
+                loading: 'Loading...',
+                error: 'Error',
+                success: 'Success'
+            }
+        };
+
+        // 번역 함수
+        function t(key) {
+            return translations[currentLang][key] || translations['en'][key] || key;
+        }
+
+        // 언어 변경 함수
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('app_language', lang);
+            applyLanguage();
+        }
+
+        // 언어 적용 함수
+        function applyLanguage() {
+            // Header
+            document.getElementById('back-btn').textContent = t('backToLibrary');
+            
+            // Sidebar
+            const sidebarTitles = document.querySelectorAll('.sidebar-section-title');
+            if (sidebarTitles[0]) sidebarTitles[0].textContent = t('library');
+            if (sidebarTitles[1]) sidebarTitles[1].textContent = t('folders');
+            
+            const allPapersItem = document.querySelector('[data-filter="all"]');
+            const recentItem = document.querySelector('[data-filter="recent"]');
+            if (allPapersItem) {
+                allPapersItem.innerHTML = `<span>📚</span> ${t('allPapers')}<span class="sidebar-item-count" id="count-all">${papers.length}</span>`;
+            }
+            if (recentItem) {
+                recentItem.innerHTML = `<span>🕐</span> ${t('recentRead')}<span class="sidebar-item-count" id="count-recent">${papers.filter(p => p.lastRead).length}</span>`;
+            }
+            
+            document.querySelector('.add-folder-btn').textContent = t('newFolder');
+            document.querySelector('.pomodoro-title').textContent = t('todayPomodoro');
+            
+            const pomodoroEmpty = document.querySelector('.pomodoro-empty');
+            if (pomodoroEmpty) pomodoroEmpty.textContent = t('noPomodoroYet');
+            
+            // Library toolbar
+            document.getElementById('search-input').placeholder = t('searchPlaceholder');
+            document.getElementById('add-paper-btn').textContent = t('addPaper');
+            
+            // Table headers
+            document.getElementById('header-title-col').textContent = t('title');
+            document.getElementById('header-author-col').textContent = t('author');
+            document.getElementById('header-date-col').textContent = t('dateAdded');
+            document.getElementById('header-folder-col').textContent = t('folder');
+            
+            // Library title
+            if (currentFilter === 'all') {
+                document.getElementById('library-title').textContent = t('allPapers');
+            } else if (currentFilter === 'recent') {
+                document.getElementById('library-title').textContent = t('recentRead');
+            }
+            
+            // Update language selector
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === currentLang);
+            });
+            
+            // Re-render papers to update UI
+            renderPapers();
+        }
 
         // Pomodoro 상태
         let pomodoroState = {
@@ -2921,6 +3385,12 @@
                 speedValue.textContent = ttsSpeed.toFixed(1) + 'x';
             }
             
+            // TTS 엔진 버튼 초기화
+            updateTTSEngineButton();
+            
+            // 언어 초기화
+            applyLanguage();
+            
             // 뽀모도로 초기화
             loadTodayPomodoro();
             initPomodoroSettings();
@@ -2947,7 +3417,7 @@
                 }
             });
 
-            document.addEventListener('keydown', e => {
+            document.addEventListener('keydown', async (e) => {
                 if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
                 if (!selectedParagraph || !currentPaper) return;
                 
@@ -2961,24 +3431,22 @@
                     // Next sentence
                     if (sentenceIndex < sentences.length - 1) {
                         sentenceIndex++;
-                        highlightSentence();
-                        updateActiveSentenceChunks();
+                        await highlightSentence();
                     } else if (currentIdx < allParas.length - 1) {
                         // Next paragraph
                         const next = allParas[currentIdx + 1];
-                        selectParagraphAndScroll(next.section, next.paragraph);
+                        await selectParagraphAndScroll(next.section, next.paragraph);
                     }
                 } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
                     e.preventDefault();
                     // Previous sentence
                     if (sentenceIndex > 0) {
                         sentenceIndex--;
-                        highlightSentence();
-                        updateActiveSentenceChunks();
+                        await highlightSentence();
                     } else if (currentIdx > 0) {
                         // Previous paragraph (last sentence)
                         const prev = allParas[currentIdx - 1];
-                        selectParagraphAndScroll(prev.section, prev.paragraph, 'last');
+                        await selectParagraphAndScroll(prev.section, prev.paragraph, 'last');
                     }
                 }
             });
@@ -3116,7 +3584,7 @@
 
             const container = document.getElementById('paper-list-content');
             if (!list.length) {
-                container.innerHTML = `<div class="empty-library"><div class="empty-library-icon">📚</div><div>논문이 없습니다</div></div>`;
+                container.innerHTML = `<div class="empty-library"><div class="empty-library-icon">📚</div><div>${t('noPapers')}</div></div>`;
                 return;
             }
 
@@ -3129,7 +3597,7 @@
                         <div class="paper-meta">${formatDate(p.addedAt)}</div>
                         <div class="paper-folder">${folder ? '📁 ' + folder.name : '-'}</div>
                         <div class="paper-actions">
-                            <button class="audio-cache-btn" onclick="event.stopPropagation(); deleteAudioCache('${p.id}')" title="오디오 캐시 삭제">🔊</button>
+                            <button class="audio-cache-btn" onclick="event.stopPropagation(); deleteAudioCache('${p.id}')" title="${currentLang === 'ko' ? '오디오 캐시 삭제' : 'Delete audio cache'}">🔊</button>
                             <button class="delete-btn" onclick="event.stopPropagation(); deletePaper('${p.id}')">🗑️</button>
                         </div>
                     </div>
@@ -3148,10 +3616,10 @@
             document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
             if (filter === 'folder') {
                 document.querySelector(`.sidebar-item[onclick*="${folderId}"]`)?.classList.add('active');
-                document.getElementById('library-title').textContent = folders.find(f => f.id === folderId)?.name || '폴더';
+                document.getElementById('library-title').textContent = folders.find(f => f.id === folderId)?.name || (currentLang === 'ko' ? '폴더' : 'Folder');
             } else {
                 document.querySelector(`.sidebar-item[data-filter="${filter}"]`)?.classList.add('active');
-                document.getElementById('library-title').textContent = filter === 'all' ? '전체 논문' : '최근 읽은';
+                document.getElementById('library-title').textContent = filter === 'all' ? t('allPapers') : t('recentRead');
             }
             renderPapers();
         }
@@ -3159,10 +3627,17 @@
         function formatDate(str) {
             const d = new Date(str);
             const diff = (Date.now() - d) / (1000 * 60 * 60 * 24);
-            if (diff < 1) return '오늘';
-            if (diff < 2) return '어제';
-            if (diff < 7) return Math.floor(diff) + '일 전';
-            return d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+            if (currentLang === 'ko') {
+                if (diff < 1) return '오늘';
+                if (diff < 2) return '어제';
+                if (diff < 7) return Math.floor(diff) + '일 전';
+                return d.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
+            } else {
+                if (diff < 1) return 'Today';
+                if (diff < 2) return 'Yesterday';
+                if (diff < 7) return Math.floor(diff) + ' days ago';
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
         }
 
         async function createFolder() {
@@ -3917,10 +4392,9 @@
         });
 
         // ========== Paragraph Selection ==========
-        function selectParagraph(section, para, sentencePosition = 'first') {
-            // TTS 정지 및 캐시 클리어 (새 문단)
+        async function selectParagraph(section, para, sentencePosition = 'first') {
+            // TTS 정지 (캐시는 유지 - 같은 논문 내에서 재사용)
             stopTTS();
-            ttsCache.clear();
             
             // Visual update - PDF overlay (다중 페이지 지원: 같은 ID의 모든 블록 선택)
             document.querySelectorAll('.paragraph-block.selected').forEach(el => el.classList.remove('selected'));
@@ -3966,15 +4440,15 @@
             
             document.getElementById('current-page-info').textContent = `${pageInfo} • 문단 ${paraIdx}/${totalParas} • ${sentences.length}문장`;
 
-            renderSentences();
+            await renderSentences();
 
             // Load note
             document.getElementById('notes-textarea').value = currentPaper.getNote(para.id);
             document.getElementById('notes-textarea').dataset.paraId = para.id;
         }
         
-        function selectParagraphAndScroll(section, para, sentencePosition = 'first') {
-            selectParagraph(section, para, sentencePosition);
+        async function selectParagraphAndScroll(section, para, sentencePosition = 'first') {
+            await selectParagraph(section, para, sentencePosition);
             scrollToParagraph(para);
         }
         
@@ -4166,14 +4640,19 @@
             
             // Then fetch chunks and re-render active sentence with semantic highlighting
             await updateActiveSentenceChunks();
+            
+            // 오디오 모드가 켜져 있으면 현재 문장 재생
+            if (audioModeEnabled) {
+                console.log('🔊 renderSentences: audioModeEnabled, playing sentence', sentenceIndex);
+                await playSentenceAudio(sentenceIndex);
+            }
         }
         
         function attachSentenceClickHandlers() {
             document.querySelectorAll('#paragraph-content .sentence').forEach(el => {
                 el.onclick = async () => {
                     sentenceIndex = parseInt(el.dataset.idx);
-                    highlightSentence();
-                    await updateActiveSentenceChunks();
+                    await highlightSentence();
                 };
             });
         }
@@ -4218,7 +4697,7 @@
             
             // 오디오 모드가 켜져 있으면 현재 문장 재생
             if (audioModeEnabled) {
-                playSentenceAudio(sentenceIndex);
+                await playSentenceAudio(sentenceIndex);
             }
         }
         
@@ -4234,7 +4713,7 @@
             const sentData = selectedParagraph.sentences[sentenceIndex];
             if (!sentData || !sentData.bboxes) return;
             
-            const scale = pdfScale;
+            const scale = currentScale;
             
             for (const bbox of sentData.bboxes) {
                 const pageNum = bbox.page || bbox.pageNum;
@@ -4804,6 +5283,91 @@
             closeModal('openai-api-modal');
         }
         
+        // ========== TTS Engine Selection ==========
+        function showTTSSelectModal(action) {
+            pendingTTSAction = action;
+            
+            // 비용 계산
+            if (currentPaper && currentPaper.sections) {
+                const allSentences = [];
+                for (const section of currentPaper.sections) {
+                    for (const para of (section.paragraphs || [])) {
+                        if (para.sentences && para.sentences.length > 0) {
+                            for (const sent of para.sentences) {
+                                const text = sent.text || sent;
+                                if (text && text.trim().length > 0) {
+                                    allSentences.push(text.trim());
+                                }
+                            }
+                        } else if (para.text) {
+                            const paraSentences = splitSentences(para.text);
+                            allSentences.push(...paraSentences.filter(s => s.trim()));
+                        }
+                    }
+                }
+                const totalChars = allSentences.reduce((sum, s) => sum + s.length, 0);
+                const estimatedCost = (totalChars * 15 / 1000000).toFixed(4);
+                document.getElementById('tts-cost-estimate').innerHTML = 
+                    `💰 예상 비용: ~$${estimatedCost} (약 ${Math.round(estimatedCost * 1400)}원)<br>` +
+                    `<span style="font-size: 10px; color: var(--text-muted);">${allSentences.length}문장, ${totalChars.toLocaleString()}자</span>`;
+            }
+            
+            showModal('tts-select-modal');
+        }
+        
+        async function selectTTSEngine(engine) {
+            selectedTTSEngine = engine;
+            localStorage.setItem('tts_engine', engine);
+            closeModal('tts-select-modal');
+            updateTTSEngineButton();
+            
+            if (engine === 'openai' && !openaiApiKey) {
+                showModal('openai-api-modal');
+                return;
+            }
+            
+            if (engine === 'kokoro') {
+                // Kokoro 서버 상태 확인
+                try {
+                    const res = await fetch('http://localhost:8001/health');
+                    if (!res.ok) throw new Error('Server not responding');
+                } catch (e) {
+                    alert('⚠️ Kokoro TTS 서버가 실행되지 않았습니다.\n\nDocker로 실행하세요:\ndocker-compose up -d');
+                    return;
+                }
+            }
+            
+            // 대기 중인 액션 실행
+            if (pendingTTSAction === 'generate') {
+                generateAllAudio();
+            } else if (pendingTTSAction === 'toggle') {
+                toggleAudioMode();
+            }
+            pendingTTSAction = null;
+        }
+        
+        // TTS 엔진 변경 버튼
+        function changeTTSEngine() {
+            selectedTTSEngine = null;
+            localStorage.removeItem('tts_engine');
+            showTTSSelectModal(null);
+        }
+        
+        // TTS 엔진 버튼 업데이트
+        function updateTTSEngineButton() {
+            const btn = document.getElementById('tts-engine-btn');
+            if (selectedTTSEngine === 'kokoro') {
+                btn.textContent = '🆓';
+                btn.title = 'Kokoro TTS (무료) - 클릭하여 변경';
+            } else if (selectedTTSEngine === 'openai') {
+                btn.textContent = '⭐';
+                btn.title = 'OpenAI TTS (유료) - 클릭하여 변경';
+            } else {
+                btn.textContent = '🎙️';
+                btn.title = 'TTS 엔진 선택';
+            }
+        }
+        
         // ========== TTS (OpenAI Text-to-Speech) ==========
         
         // 속도 업데이트
@@ -4820,7 +5384,14 @@
         
         // 오디오 모드 토글
         function toggleAudioMode() {
-            if (!openaiApiKey) {
+            // TTS 엔진 선택 안 했으면 먼저 선택
+            if (!selectedTTSEngine) {
+                showTTSSelectModal('toggle');
+                return;
+            }
+            
+            // OpenAI 선택했는데 API 키 없으면
+            if (selectedTTSEngine === 'openai' && !openaiApiKey) {
                 showModal('openai-api-modal');
                 return;
             }
@@ -4862,13 +5433,20 @@
         
         // 전체 논문 오디오 생성
         async function generateAllAudio() {
-            if (!openaiApiKey) {
+            // TTS 엔진 선택 안 했으면 먼저 선택
+            if (!selectedTTSEngine) {
+                showTTSSelectModal('generate');
+                return;
+            }
+            
+            // OpenAI 선택했는데 API 키 없으면
+            if (selectedTTSEngine === 'openai' && !openaiApiKey) {
                 showModal('openai-api-modal');
                 return;
             }
             
             if (!currentPaper || !currentPaper.serverParsed || !currentPaper.sections) {
-                alert('Grobid로 분석된 논문을 먼저 열어주세요.');
+                alert('서버로 분석된 논문을 먼저 열어주세요.');
                 return;
             }
             
@@ -4932,14 +5510,27 @@
             const estimatedCost = (totalChars * 15 / 1000000).toFixed(4);
             const avgCharsPerSentence = Math.round(totalChars / toGenerate.length);
             
-            const confirmed = confirm(
-                `🎙️ 전체 오디오 생성\n\n` +
-                `• 총 문장: ${allSentences.length}개\n` +
-                `• 생성 필요: ${toGenerate.length}개 (캐시: ${allSentences.length - toGenerate.length}개)\n` +
-                `• 총 글자 수: ${totalChars.toLocaleString()}자 (평균 ${avgCharsPerSentence}자/문장)\n` +
-                `• 예상 총 비용: ~$${estimatedCost} (약 ${Math.round(estimatedCost * 1400)}원)\n\n` +
-                `진행하시겠습니까?`
-            );
+            // 엔진별 확인 메시지
+            let confirmMsg;
+            if (selectedTTSEngine === 'kokoro') {
+                confirmMsg = 
+                    `🎙️ 전체 오디오 생성 (Kokoro - 무료)\n\n` +
+                    `• 총 문장: ${allSentences.length}개\n` +
+                    `• 생성 필요: ${toGenerate.length}개 (캐시: ${allSentences.length - toGenerate.length}개)\n` +
+                    `• 총 글자 수: ${totalChars.toLocaleString()}자\n` +
+                    `• 💰 비용: $0 (로컬 무료)\n\n` +
+                    `진행하시겠습니까?`;
+            } else {
+                confirmMsg = 
+                    `🎙️ 전체 오디오 생성 (OpenAI)\n\n` +
+                    `• 총 문장: ${allSentences.length}개\n` +
+                    `• 생성 필요: ${toGenerate.length}개 (캐시: ${allSentences.length - toGenerate.length}개)\n` +
+                    `• 총 글자 수: ${totalChars.toLocaleString()}자 (평균 ${avgCharsPerSentence}자/문장)\n` +
+                    `• 💰 예상 비용: ~$${estimatedCost} (약 ${Math.round(estimatedCost * 1400)}원)\n\n` +
+                    `진행하시겠습니까?`;
+            }
+            
+            const confirmed = confirm(confirmMsg);
             
             if (!confirmed) return;
             
@@ -4955,29 +5546,52 @@
             let generated = 0;
             let errors = 0;
             
-            // 순차적으로 생성 (API rate limit 고려)
+            // 순차적으로 생성
             for (const sent of toGenerate) {
                 try {
-                    const response = await fetch('https://api.openai.com/v1/audio/speech', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${openaiApiKey}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            model: 'gpt-4o-mini-tts',
-                            input: sent.text,
-                            voice: 'cedar',
-                            speed: 1.0 // 원본 속도로 저장, 재생 시 조절
-                        })
-                    });
+                    let audioBlob;
                     
-                    if (!response.ok) {
-                        const err = await response.json().catch(() => ({}));
-                        throw new Error(err.error?.message || `API 오류: ${response.status}`);
+                    if (selectedTTSEngine === 'kokoro') {
+                        // Kokoro TTS (로컬)
+                        const response = await fetch('http://localhost:8001/tts', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                text: sent.text,
+                                voice: 'am_echo',
+                                speed: 1.0
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`Kokoro 오류: ${response.status}`);
+                        }
+                        
+                        audioBlob = await response.blob();
+                    } else {
+                        // OpenAI TTS
+                        const response = await fetch('https://api.openai.com/v1/audio/speech', {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${openaiApiKey}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                model: 'gpt-4o-mini-tts',
+                                input: sent.text,
+                                voice: 'cedar',
+                                speed: 1.0
+                            })
+                        });
+                        
+                        if (!response.ok) {
+                            const err = await response.json().catch(() => ({}));
+                            throw new Error(err.error?.message || `API 오류: ${response.status}`);
+                        }
+                        
+                        audioBlob = await response.blob();
                     }
                     
-                    const audioBlob = await response.blob();
                     ttsCache.set(sent.cacheKey, audioBlob);
                     
                     // DB에 저장
@@ -5001,8 +5615,9 @@
                     }
                 }
                 
-                // 약간의 딜레이 (rate limit 방지)
-                await new Promise(r => setTimeout(r, 100));
+                // 약간의 딜레이 (Kokoro는 빠르게, OpenAI는 rate limit 방지)
+                const delay = selectedTTSEngine === 'kokoro' ? 50 : 100;
+                await new Promise(r => setTimeout(r, delay));
             }
             
             // 완료
@@ -5011,10 +5626,11 @@
             genBtn.disabled = false;
             hideAudioProgress();
             
+            const engineName = selectedTTSEngine === 'kokoro' ? 'Kokoro (무료)' : 'OpenAI';
             if (errors > 0) {
-                alert(`생성 완료!\n성공: ${generated}개, 실패: ${errors}개`);
+                alert(`생성 완료! (${engineName})\n성공: ${generated}개, 실패: ${errors}개`);
             } else {
-                alert(`✅ ${generated}개 오디오 생성 완료!`);
+                alert(`✅ ${generated}개 오디오 생성 완료! (${engineName})`);
             }
             
             // 오디오 모드 활성화
@@ -5183,9 +5799,15 @@
         }
         
         // 프로그레스 UI
-        function showAudioProgress(current, total) {
+        let audioProgressInitialized = false;
+        
+        function showAudioProgress(current, total, forceNew = false) {
             let container = document.getElementById('audio-progress');
-            if (!container) {
+            
+            // 처음 시작하거나 forceNew면 새 강아지로!
+            if (!container || forceNew || !audioProgressInitialized) {
+                if (container) container.remove();
+                
                 const dog = getRandomDogMusician();
                 container = document.createElement('div');
                 container.id = 'audio-progress';
@@ -5204,9 +5826,19 @@
                 `;
                 const content = document.getElementById('paragraph-content');
                 content.parentNode.insertBefore(container, content);
+                audioProgressInitialized = true;
             }
+            
             container.style.display = 'flex';
             updateAudioProgress(current, total);
+        }
+        
+        function hideAudioProgress() {
+            const container = document.getElementById('audio-progress');
+            if (container) {
+                container.style.display = 'none';
+            }
+            audioProgressInitialized = false; // 다음번엔 새 강아지!
         }
         
         function updateAudioProgress(current, total) {
@@ -5245,13 +5877,28 @@
         
         // 특정 문장 재생 (캐시된 오디오만)
         async function playSentenceAudio(index) {
-            if (!audioModeEnabled || !currentPaper || index >= sentences.length) return;
+            console.log('🔊 playSentenceAudio called:', { index, audioModeEnabled, hasPaper: !!currentPaper, sentencesLength: sentences.length });
+            
+            if (!audioModeEnabled) {
+                console.log('⚠️ Audio mode disabled');
+                return;
+            }
+            if (!currentPaper) {
+                console.log('⚠️ No current paper');
+                return;
+            }
+            if (index >= sentences.length) {
+                console.log('⚠️ Index out of range');
+                return;
+            }
             
             stopTTS();
             
             const sentence = sentences[index];
             const text = (sentence.text || sentence).trim();
             const cacheKey = `${currentPaper.id}_${hashString(text)}`;
+            
+            console.log('🔊 Looking for audio:', { text: text.substring(0, 50), cacheKey });
             
             try {
                 let audioBlob;
@@ -5265,29 +5912,33 @@
                     if (dbCache) {
                         audioBlob = new Blob([dbCache.data], { type: 'audio/mpeg' });
                         ttsCache.set(cacheKey, audioBlob);
+                        console.log('✅ Found in DB cache');
                     } else {
                         // 캐시 없음 - 생성 안 됨
-                        console.log('⚠️ No cached audio for this sentence');
+                        console.log('⚠️ No cached audio for this sentence, cacheKey:', cacheKey);
                         return;
                     }
                 }
                 
                 // 재생
+                console.log('▶️ Playing audio...');
                 const audioUrl = URL.createObjectURL(audioBlob);
                 ttsAudio = new Audio(audioUrl);
                 ttsAudio.playbackRate = ttsSpeed;
                 ttsPlaying = true;
                 
                 ttsAudio.onended = () => {
+                    console.log('🔇 Audio ended');
                     URL.revokeObjectURL(audioUrl);
                     ttsPlaying = false;
                 };
-                ttsAudio.onerror = () => {
-                    console.error('Audio playback error');
+                ttsAudio.onerror = (e) => {
+                    console.error('Audio playback error:', e);
                     ttsPlaying = false;
                 };
                 
                 await ttsAudio.play();
+                console.log('✅ Audio started playing');
                 
             } catch (err) {
                 console.error('TTS playback error:', err);
@@ -5384,6 +6035,9 @@
             const breakInput = document.getElementById('pomodoro-break-time');
             if (focusInput) focusInput.value = pomodoroState.focusDuration;
             if (breakInput) breakInput.value = pomodoroState.breakDuration;
+            
+            // 초기 시간도 저장된 설정값으로 설정
+            pomodoroState.timeRemaining = pomodoroState.focusDuration * 60;
             updatePomodoroDisplay();
         }
 
@@ -5406,38 +6060,19 @@
             closeModal('pomodoro-settings-modal');
         }
 
-        function showPomodoroTimer() {
-            const widget = document.getElementById('pomodoro-timer-widget');
-            widget.style.display = 'flex';
-            
-            // 위치 조정 (오른쪽 패널 왼쪽에 배치)
-            const rightPanel = document.getElementById('right-panel');
-            if (rightPanel) {
-                const rightPanelWidth = rightPanel.offsetWidth;
-                widget.style.right = (rightPanelWidth + 20) + 'px';
-            }
-            
-            updatePomodoroDisplay();
-        }
-
-        function hidePomodoroTimer() {
-            document.getElementById('pomodoro-timer-widget').style.display = 'none';
-        }
-
         function updatePomodoroDisplay() {
-            const display = document.getElementById('pomodoro-timer-display');
-            const label = document.getElementById('pomodoro-timer-label');
-            
-            if (!display || !label) return;
+            const display = document.getElementById('pomodoro-toolbar-time');
+            if (!display) return;
             
             const minutes = Math.floor(pomodoroState.timeRemaining / 60);
             const seconds = pomodoroState.timeRemaining % 60;
             display.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
             
-            display.classList.remove('focus', 'break');
-            display.classList.add(pomodoroState.mode);
-            
-            label.textContent = pomodoroState.mode === 'focus' ? '집중' : '휴식';
+            display.classList.remove('focus', 'break', 'running');
+            if (pomodoroState.isRunning) {
+                display.classList.add('running');
+                display.classList.add(pomodoroState.mode);
+            }
         }
 
         function togglePomodoro() {
@@ -5460,7 +6095,7 @@
             const stopBtn = document.getElementById('pomodoro-stop-btn');
             
             playBtn.innerHTML = '⏸';
-            playBtn.classList.add('pause');
+            playBtn.classList.add('playing');
             stopBtn.style.display = 'flex';
             
             pomodoroState.intervalId = setInterval(pomodoroTick, 1000);
@@ -5473,14 +6108,14 @@
             
             const playBtn = document.getElementById('pomodoro-play-btn');
             playBtn.innerHTML = '▶';
-            playBtn.classList.remove('pause');
+            playBtn.classList.remove('playing');
         }
 
         function resumePomodoro() {
             pomodoroState.isPaused = false;
             const playBtn = document.getElementById('pomodoro-play-btn');
             playBtn.innerHTML = '⏸';
-            playBtn.classList.add('pause');
+            playBtn.classList.add('playing');
             
             pomodoroState.intervalId = setInterval(pomodoroTick, 1000);
         }
@@ -5497,7 +6132,7 @@
             const stopBtn = document.getElementById('pomodoro-stop-btn');
             
             playBtn.innerHTML = '▶';
-            playBtn.classList.remove('pause');
+            playBtn.classList.remove('playing');
             stopBtn.style.display = 'none';
             
             updatePomodoroDisplay();
@@ -5516,10 +6151,23 @@
                     pomodoroState.todayDate = new Date().toDateString();
                     saveTodayPomodoro();
                     renderPomodoroTomatoes();
-                    showFocusCompleteAnimation();
+                    showPomodoroToast('focus');
+                    
+                    // 자동으로 휴식 시작
+                    setTimeout(() => {
+                        pomodoroState.mode = 'break';
+                        pomodoroState.timeRemaining = pomodoroState.breakDuration * 60;
+                        pomodoroState.intervalId = setInterval(pomodoroTick, 1000);
+                        updatePomodoroDisplay();
+                    }, 3000);
                 } else {
                     // 휴식 세션 완료
-                    showBreakCompleteAnimation();
+                    showPomodoroToast('break');
+                    
+                    // 자동으로 다음 집중 세션 시작
+                    setTimeout(() => {
+                        startPomodoro();
+                    }, 3000);
                 }
             }
         }
@@ -5548,92 +6196,72 @@
             });
         }
 
-        function showFocusCompleteAnimation() {
+        function showPomodoroToast(type) {
             playPomodoroAlarm();
             
-            const overlay = document.getElementById('pomodoro-overlay');
-            const animation = document.getElementById('pomodoro-animation');
-            const message = document.getElementById('pomodoro-message');
-            const subMessage = document.getElementById('pomodoro-sub-message');
-            const btn = document.getElementById('pomodoro-overlay-btn');
+            const backdrop = document.getElementById('pomodoro-toast-backdrop');
+            const toast = document.getElementById('pomodoro-toast');
+            const dogAnimation = document.getElementById('pomodoro-dog-animation');
+            const title = document.getElementById('pomodoro-toast-title');
+            const sub = document.getElementById('pomodoro-toast-sub');
+            const tomatoes = document.getElementById('pomodoro-toast-tomatoes');
             
-            // 강아지가 토마토로 저글링하는 애니메이션
-            animation.innerHTML = `
-                <div class="pomodoro-dog">🐕</div>
-                <div class="pomodoro-tomatoes-juggle pomodoro-tomato-1">🍅</div>
-                <div class="pomodoro-tomatoes-juggle pomodoro-tomato-2">🍅</div>
-                <div class="pomodoro-tomatoes-juggle pomodoro-tomato-3">🍅</div>
-            `;
-            
-            message.textContent = '🎉 집중 세션 완료!';
-            subMessage.textContent = `오늘 ${pomodoroState.todayCount}번째 뽀모도로를 완료했어요!`;
-            btn.textContent = '☕ 휴식 시작하기';
-            btn.className = 'pomodoro-overlay-btn break-btn';
-            btn.dataset.action = 'startBreak';
-            
-            overlay.classList.add('show');
-        }
-
-        function showBreakCompleteAnimation() {
-            playPomodoroAlarm();
-            
-            const overlay = document.getElementById('pomodoro-overlay');
-            const animation = document.getElementById('pomodoro-animation');
-            const message = document.getElementById('pomodoro-message');
-            const subMessage = document.getElementById('pomodoro-sub-message');
-            const btn = document.getElementById('pomodoro-overlay-btn');
-            
-            // 강아지가 자다가 일어나는 애니메이션
-            animation.innerHTML = `
-                <div class="pomodoro-wakeup">🐕</div>
-                <div class="pomodoro-zzz">💤</div>
-            `;
-            
-            // 잠시 후 일어난 상태로 변경
-            setTimeout(() => {
-                animation.innerHTML = `<div class="pomodoro-dog" style="animation: none;">🐕</div>`;
-            }, 1000);
-            
-            message.textContent = '☀️ 휴식 끝!';
-            subMessage.textContent = '다시 집중할 준비가 됐어요!';
-            btn.textContent = '🔥 집중 시작하기';
-            btn.className = 'pomodoro-overlay-btn focus-btn';
-            btn.dataset.action = 'startFocus';
-            
-            overlay.classList.add('show');
-        }
-
-        function handlePomodoroOverlayClick() {
-            const btn = document.getElementById('pomodoro-overlay-btn');
-            const overlay = document.getElementById('pomodoro-overlay');
-            
-            overlay.classList.remove('show');
-            
-            if (btn.dataset.action === 'startBreak') {
-                // 휴식 시작
-                pomodoroState.mode = 'break';
-                pomodoroState.timeRemaining = pomodoroState.breakDuration * 60;
-                pomodoroState.isPaused = false;
-                pomodoroState.intervalId = setInterval(pomodoroTick, 1000);
-                
-                const playBtn = document.getElementById('pomodoro-play-btn');
-                playBtn.innerHTML = '⏸';
-                playBtn.classList.add('pause');
-                
-                updatePomodoroDisplay();
-            } else if (btn.dataset.action === 'startFocus') {
-                // 새 집중 세션 시작
-                startPomodoro();
+            if (type === 'focus') {
+                // 토마토 먹는 강아지
+                dogAnimation.className = 'dog-eating';
+                dogAnimation.innerHTML = `
+                    <div class="dog-container">
+                        <div class="dog-body"></div>
+                        <div class="dog-head">
+                            <div class="dog-eye-left"></div>
+                            <div class="dog-eye-right"></div>
+                            <div class="dog-nose"></div>
+                            <div class="dog-mouth"></div>
+                        </div>
+                        <div class="dog-ear-left"></div>
+                        <div class="dog-ear-right"></div>
+                        <div class="tomato">🍅</div>
+                        <div class="dog-tail"></div>
+                    </div>
+                    <div class="dog-eating-message">냠냠... 맛있다!</div>
+                `;
+                title.textContent = '🎉 집중 세션 완료!';
+                sub.textContent = `오늘 ${pomodoroState.todayCount}번째 뽀모도로 달성!`;
+                tomatoes.textContent = '🍅'.repeat(pomodoroState.todayCount);
+                tomatoes.style.display = 'block';
+            } else {
+                // 자다가 일어나는 강아지
+                dogAnimation.className = 'dog-waking';
+                dogAnimation.innerHTML = `
+                    <div class="dog-container">
+                        <div class="dog-body"></div>
+                        <div class="dog-head">
+                            <div class="dog-eye-left"></div>
+                            <div class="dog-eye-right"></div>
+                            <div class="dog-nose"></div>
+                            <div class="dog-mouth"></div>
+                        </div>
+                        <div class="dog-ear-left"></div>
+                        <div class="dog-ear-right"></div>
+                        <div class="zzz">💤</div>
+                        <div class="dog-tail"></div>
+                    </div>
+                    <div class="dog-eating-message">으아~ 잘 잤다!</div>
+                `;
+                title.textContent = '☀️ 휴식 끝!';
+                sub.textContent = '다시 집중할 준비가 됐어요';
+                tomatoes.style.display = 'none';
             }
+            
+            backdrop.classList.add('show');
+            toast.classList.add('show');
+            
+            // 3초 후 자동으로 닫기
+            setTimeout(() => {
+                backdrop.classList.remove('show');
+                toast.classList.remove('show');
+            }, 3000);
         }
-
-        // 라이브러리로 돌아갈 때 타이머 위젯 숨기기
-        const originalBackToLibrary = backToLibrary;
-        backToLibrary = function() {
-            // 뽀모도로 타이머 숨기기 (실행 중이면 계속 실행)
-            // hidePomodoroTimer(); // 주석: 실행 중에도 유지하려면 이 줄 제거
-            originalBackToLibrary();
-        };
     </script>
 </body>
 </html>

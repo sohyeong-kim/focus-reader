@@ -3,12 +3,146 @@
   
   # Focus Reader 📚🧠
   
-  **ADHD를 위한 논문 리더**
-  
-  문장을 의미 단위로 쪼개서 색깔로 보여주고, Bionic Reading으로 읽기 쉽게 해줘요!
+  **[🇰🇷 한국어](#한국어) | [🇺🇸 English](#english)**
 </div>
 
 ---
+
+# English
+
+**Paper Reader for ADHD**
+
+Breaks sentences into meaningful chunks with color highlighting and Bionic Reading for easier focus!
+
+## 🚀 Installation (Mac)
+
+### Option 1: DMG File (Easy)
+
+#### Step 1: Install Prerequisites
+
+**Docker Desktop:**
+1. Go to https://www.docker.com/products/docker-desktop/
+2. Click **"Download for Mac"** → Download
+3. Double-click the downloaded file to install
+4. Run **Docker** from Applications (whale icon 🐳)
+5. Wait until Docker is fully started (whale stops moving in menu bar)
+
+#### Step 2: Start Services
+
+Open Terminal and run:
+
+\`\`\`bash
+# Clone and start with Docker Compose
+git clone https://github.com/thgud1624/focus-reader.git
+cd focus-reader
+docker-compose up -d
+\`\`\`
+
+> ⏳ First time takes 5-10 minutes to download!
+
+This starts:
+- **Grobid** (port 8070) - PDF parsing
+- **spaCy** (port 8000) - Sentence chunking
+- **Kokoro TTS** (port 8001) - Free local TTS
+
+#### Step 3: Install Focus Reader
+
+1. Download **Focus Reader.dmg** from [Releases](https://github.com/thgud1624/focus-reader/releases)
+2. Double-click the DMG file
+3. Drag Focus Reader to **Applications** folder
+4. Run Focus Reader from Applications!
+
+---
+
+### Option 2: Build from Source (Developers)
+
+\`\`\`bash
+git clone https://github.com/thgud1624/focus-reader.git
+cd focus-reader
+npm install
+docker-compose up -d
+npm start
+\`\`\`
+
+---
+
+## 🎮 Usage
+
+1. **Open PDF**: Select a PDF file in the app
+2. **Click Paragraph**: Click on a paragraph you want to read
+3. **Navigate Sentences**: Use arrow keys \`←\` \`→\` or \`↑\` \`↓\`
+
+---
+
+## 🎙️ TTS Options
+
+| Engine | Cost | Quality | Requirements |
+|--------|------|---------|--------------|
+| **Kokoro TTS** | Free | Good | Docker running |
+| **OpenAI TTS** | ~\$15/1M chars | Excellent | API key |
+
+> 💡 Kokoro TTS runs locally via Docker - completely free!
+
+---
+
+## 🔑 API Keys (Optional)
+
+### Claude API
+> For AI chat features
+
+1. Go to https://console.anthropic.com
+2. Create API key
+3. Click **[🔑 API]** in app → Enter key
+
+### OpenAI API
+> For premium TTS (optional - Kokoro is free)
+
+1. Go to https://platform.openai.com
+2. Create API key
+3. Click **[🔑 API]** in app → Enter OpenAI key
+
+**Features without API keys:**
+- ✅ PDF reading & navigation
+- ✅ Bionic Reading & color highlighting
+- ✅ Kokoro TTS (free, local)
+- ✅ Notes
+
+**Features requiring API keys:**
+- 🔑 Claude AI chat (Claude API)
+- 🔑 OpenAI TTS (OpenAI API)
+
+---
+
+## ❓ Troubleshooting
+
+### App won't open / "Damaged app" warning
+\`\`\`bash
+xattr -cr /Applications/Focus\\ Reader.app
+\`\`\`
+
+### "docker: command not found"
+→ Docker Desktop not installed or not running
+
+### PDF parsing fails
+→ Check Docker is running (whale icon 🐳)
+→ Run: \`docker-compose up -d\`
+→ Verify: \`docker ps\` should show grobid, spacy, kokoro
+
+---
+
+## 🌐 Language
+
+The app supports **English** and **Korean**. Toggle in the header:
+- Click \`한국어\` for Korean
+- Click \`ENG\` for English
+
+---
+
+# 한국어
+
+**ADHD를 위한 논문 리더**
+
+문장을 의미 단위로 쪼개서 색깔로 보여주고, Bionic Reading으로 읽기 쉽게 해줘요!
 
 ## 🚀 설치 방법 (Mac)
 
@@ -23,26 +157,25 @@
 4. Applications에서 **Docker** 실행 (고래 아이콘 🐳)
 5. Docker가 완전히 켜질 때까지 기다리기 (상단바에 고래가 움직임 멈추면 OK)
 
-**Python 패키지 설치:**
+#### 2단계: 서비스 시작
 
-터미널 열고 (Spotlight에서 "터미널" 검색) 아래 복붙:
+터미널 열고:
 
-```bash
-pip3 install fastapi uvicorn httpx spacy
-python3 -m spacy download en_core_web_sm
-```
-
-**Grobid 실행:**
-
-터미널에서:
-
-```bash
-docker run -d --name grobid --restart=always -p 8070:8070 lfoppiano/grobid:0.8.0
-```
+\`\`\`bash
+# 레포 클론 후 Docker Compose로 시작
+git clone https://github.com/thgud1624/focus-reader.git
+cd focus-reader
+docker-compose up -d
+\`\`\`
 
 > ⏳ 처음엔 다운로드 때문에 5~10분 걸려요!
 
-#### 2단계: Focus Reader 설치
+이렇게 하면 다음 서비스들이 시작돼요:
+- **Grobid** (포트 8070) - PDF 파싱
+- **spaCy** (포트 8000) - 문장 청킹
+- **Kokoro TTS** (포트 8001) - 무료 로컬 TTS
+
+#### 3단계: Focus Reader 설치
 
 1. [Releases](https://github.com/thgud1624/focus-reader/releases)에서 **Focus Reader.dmg** 다운로드
 2. DMG 파일 더블클릭
@@ -53,24 +186,13 @@ docker run -d --name grobid --restart=always -p 8070:8070 lfoppiano/grobid:0.8.0
 
 ### 방법 2: 소스코드로 설치 (개발자용)
 
-#### 1단계: 필수 프로그램
-
-위 방법 1의 "필수 프로그램 설치" 똑같이 하고,
-
-**추가로 Node.js 설치:**
-1. https://nodejs.org/ 접속
-2. **LTS 버전** 다운로드 & 설치
-
-#### 2단계: 다운로드 & 실행
-
-터미널에서:
-
-```bash
+\`\`\`bash
 git clone https://github.com/thgud1624/focus-reader.git
 cd focus-reader
 npm install
+docker-compose up -d
 npm start
-```
+\`\`\`
 
 ---
 
@@ -82,67 +204,67 @@ npm start
 
 ---
 
-## 🔑 API 키 설정
+## 🎙️ TTS 옵션
 
-### Claude API (선택사항)
+| 엔진 | 비용 | 품질 | 요구사항 |
+|------|------|------|----------|
+| **Kokoro TTS** | 무료 | 좋음 | Docker 실행 |
+| **OpenAI TTS** | ~\$15/1M 글자 | 최고 | API 키 |
 
-> ⚠️ **AI 챗 기능**을 사용하려면 Claude API 키가 필요해요!
-
-**API 키 발급:**
-1. https://console.anthropic.com 접속
-2. 회원가입 후 API Keys에서 키 생성
-3. 앱에서 **[🔑 API]** 버튼 클릭 → 키 입력
-
-### OpenAI API (선택사항)
-
-> ⚠️ **TTS(텍스트 음성 변환) 기능**을 사용하려면 OpenAI API 키가 필요해요!
-
-**API 키 발급:**
-1. https://platform.openai.com 접속
-2. 회원가입 후 API Keys에서 키 생성
-3. 앱에서 **[🔑 API]** 버튼 클릭 → OpenAI 키 입력
+> 💡 Kokoro TTS는 Docker로 로컬에서 실행 - 완전 무료!
 
 ---
 
+## 🔑 API 키 설정 (선택사항)
+
+### Claude API
+> AI 챗 기능용
+
+1. https://console.anthropic.com 접속
+2. API 키 생성
+3. 앱에서 **[🔑 API]** 버튼 클릭 → 키 입력
+
+### OpenAI API
+> 프리미엄 TTS용 (Kokoro는 무료)
+
+1. https://platform.openai.com 접속
+2. API 키 생성
+3. 앱에서 **[🔑 API]** 버튼 클릭 → OpenAI 키 입력
+
 **API 키 없이도 가능한 기능:**
 - ✅ PDF 열기 & 읽기
-- ✅ 문단 클릭 & 문장 이동
 - ✅ Bionic Reading & 색깔 하이라이트
+- ✅ Kokoro TTS (무료, 로컬)
 - ✅ 노트 작성
 
 **API 키 필요한 기능:**
 - 🔑 Claude AI 챗 (Claude API)
-- 🔑 TTS 음성 읽기 (OpenAI API)
+- 🔑 OpenAI TTS (OpenAI API)
 
 ---
 
 ## ❓ 문제 해결
 
 ### 앱이 안 열려요 / "손상된 앱" 경고
-```bash
-xattr -cr /Applications/Focus\ Reader.app
-```
-터미널에 위 명령어 치고 다시 열기
+\`\`\`bash
+xattr -cr /Applications/Focus\\ Reader.app
+\`\`\`
 
 ### "docker: command not found"
 → Docker Desktop 설치 안 됨 / 안 켜짐
 
-### "pip3: command not found"
-→ Python 설치: https://www.python.org/downloads/
-
-### PDF 파싱이 안 돼요 / "Grobid 실패"
-→ Docker Desktop이 켜져있는지 확인 (고래 아이콘 ��)
-→ Grobid 확인: \`docker ps\` 쳤을 때 grobid 보여야 함
-→ 안 보이면: \`docker start grobid\`
+### PDF 파싱이 안 돼요
+→ Docker Desktop이 켜져있는지 확인 (고래 아이콘 🐳)
+→ 실행: \`docker-compose up -d\`
+→ 확인: \`docker ps\` 쳤을 때 grobid, spacy, kokoro 보여야 함
 
 ---
 
-## 🔄 매일 사용할 때
+## 🌐 언어 설정
 
-1. **Docker Desktop 실행** (고래 아이콘)
-2. **Focus Reader 실행**
-
-> 💡 Grobid는 Docker 켜면 자동 실행돼요!
+앱은 **영어**와 **한국어**를 지원합니다. 헤더에서 토글:
+- \`한국어\` 클릭하면 한국어
+- \`ENG\` 클릭하면 영어
 
 ---
 
@@ -160,12 +282,7 @@ xattr -cr /Applications/Focus\ Reader.app
 
 이 프로젝트가 도움이 되셨다면 커피 한 잔 사주세요!
 
-<a href="https://buymeacoffee.com/YOUR_USERNAME" target="_blank">
-  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50">
-</a>
-
-- 무료로 사용하셔도 됩니다!
-- 후원은 개발 동기 부여가 됩니다 🙏
+If this project helped you, consider buying me a coffee!
 
 ---
 
@@ -173,8 +290,8 @@ xattr -cr /Applications/Focus\ Reader.app
 
 This project is proprietary software. See [LICENSE](LICENSE) for details.
 
-- ✅ 개인 비상업적 사용 허용
-- ❌ 상업적 사용, 수정, 재배포 금지
+- ✅ Personal non-commercial use allowed / 개인 비상업적 사용 허용
+- ❌ Commercial use, modification, redistribution prohibited / 상업적 사용, 수정, 재배포 금지
 
 ---
 
