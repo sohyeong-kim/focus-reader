@@ -71,12 +71,12 @@ Breaks sentences into meaningful chunks with color highlighting and Bionic Readi
 
 Open Terminal and run:
 
-\`\`\`bash
+```bash
 # Clone and start with Docker Compose
 git clone https://github.com/thgud1624/focus-reader.git
 cd focus-reader
 docker-compose up -d
-\`\`\`
+```
 
 > ⏳ First time takes 5-10 minutes to download!
 
