@@ -49,45 +49,8 @@ Breaks sentences into meaningful chunks with color highlighting and Bionic Readi
 | **Context-Aware** | AI knows which paragraph you're reading |
 
 ### 🎨 UI Overview
+<img width="1371" height="839" alt="Screenshot 2025-11-27 at 09 58 05" src="https://github.com/user-attachments/assets/20abbfb4-b9b2-4bdb-9b1e-ed9bcfcd03b0" />
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│  📚 Focus Reader          [한국어 | ENG]  [🔑 API]  [⚙️]   │  ← Header
-├─────────────────────────────────────────────────────────────┤
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐                  │
-│  │  📄 PDF  │  │  📄 PDF  │  │  📄 PDF  │   ...            │  ← Library View
-│  │ Thumbnail│  │ Thumbnail│  │ Thumbnail│                  │
-│  │  Title   │  │  Title   │  │  Title   │                  │
-│  └──────────┘  └──────────┘  └──────────┘                  │
-├─────────────────────────────────────────────────────────────┤
-│  [+ Add PDF]  [📁 New Folder]  [🔍 Search]                 │  ← Actions
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│  Paper Title                              [🎙️ TTS] [❌]    │  ← Reading View
-├───────────────────────────────┬─────────────────────────────┤
-│                               │                             │
-│   Paragraph 1 (click me!)     │    🎵 Audio Player          │
-│                               │    [▶️] ━━━━━━━━○━━ 1:23    │
-│   Paragraph 2                 │                             │
-│   ...                         │    🐕 Cute dog animation    │
-│                               │                             │
-│   Paragraph N                 │    💬 AI Chat (optional)    │
-│                               │                             │
-└───────────────────────────────┴─────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│  Focused Paragraph Reader                          [❌]     │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│   "The quick brown fox"  "jumps over"  "the lazy dog."     │
-│        (blue)              (orange)        (blue)           │
-│                              ↑                              │
-│                    Currently highlighted                    │
-│                                                             │
-│   [← Prev]                                      [Next →]    │
-└─────────────────────────────────────────────────────────────┘
-```
 
 ---
 
