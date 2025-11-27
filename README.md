@@ -14,6 +14,83 @@
 
 Breaks sentences into meaningful chunks with color highlighting and Bionic Reading for easier focus!
 
+---
+
+## ✨ Features at a Glance
+
+### 📖 Smart Reading Experience
+| Feature | What it Does |
+|---------|--------------|
+| **Chunk Highlighting** | Sentences are split into meaningful phrases with alternating colors (blue/orange) - easier to follow! |
+| **Bionic Reading** | First few letters of each word are **bold** to guide your eyes naturally |
+| **One Paragraph at a Time** | Click a paragraph → it opens in a focused reader view, no distractions |
+| **Keyboard Navigation** | Use `←` `→` to move between sentences, `↑` `↓` to jump paragraphs |
+
+### 🎧 Audio Features
+| Feature | What it Does |
+|---------|--------------|
+| **Text-to-Speech** | Listen to paragraphs with natural AI voices |
+| **Sentence Sync** | Audio highlights the current sentence as it plays |
+| **3 TTS Options** | Kokoro (free/local), OpenAI (premium), or Browser TTS |
+| **Playback Controls** | Play/pause, skip sentences, adjust speed |
+
+### 🗂️ Library & Organization
+| Feature | What it Does |
+|---------|--------------|
+| **PDF Library** | All your papers in one place with thumbnails |
+| **Folders** | Create folders to organize papers by topic |
+| **Search** | Find papers by title |
+| **Reading Progress** | Resume where you left off |
+
+### 🤖 AI Assistant (Optional)
+| Feature | What it Does |
+|---------|--------------|
+| **Claude Chat** | Ask questions about the paper, get summaries |
+| **Context-Aware** | AI knows which paragraph you're reading |
+
+### 🎨 UI Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  📚 Focus Reader          [한국어 | ENG]  [🔑 API]  [⚙️]   │  ← Header
+├─────────────────────────────────────────────────────────────┤
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐                  │
+│  │  📄 PDF  │  │  📄 PDF  │  │  📄 PDF  │   ...            │  ← Library View
+│  │ Thumbnail│  │ Thumbnail│  │ Thumbnail│                  │
+│  │  Title   │  │  Title   │  │  Title   │                  │
+│  └──────────┘  └──────────┘  └──────────┘                  │
+├─────────────────────────────────────────────────────────────┤
+│  [+ Add PDF]  [📁 New Folder]  [🔍 Search]                 │  ← Actions
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│  Paper Title                              [🎙️ TTS] [❌]    │  ← Reading View
+├───────────────────────────────┬─────────────────────────────┤
+│                               │                             │
+│   Paragraph 1 (click me!)     │    🎵 Audio Player          │
+│                               │    [▶️] ━━━━━━━━○━━ 1:23    │
+│   Paragraph 2                 │                             │
+│   ...                         │    🐕 Cute dog animation    │
+│                               │                             │
+│   Paragraph N                 │    💬 AI Chat (optional)    │
+│                               │                             │
+└───────────────────────────────┴─────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│  Focused Paragraph Reader                          [❌]     │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│   "The quick brown fox"  "jumps over"  "the lazy dog."     │
+│        (blue)              (orange)        (blue)           │
+│                              ↑                              │
+│                    Currently highlighted                    │
+│                                                             │
+│   [← Prev]                                      [Next →]    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## 🚀 Installation (Mac)
 
 ### Option 1: DMG File (Easy)
