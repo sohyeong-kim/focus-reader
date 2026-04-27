@@ -105,6 +105,8 @@
         .translate-btn { font-size: 11px; padding: 4px 10px; }
         .translate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
         .translate-btn.loading { background: var(--accent-orange); }
+        .translate-btn-group { display: flex; gap: 4px; align-items: center; }
+        .translate-settings-btn { font-size: 10px; padding: 4px 6px; background: var(--bg-tertiary); }
 
         /* Library View */
         .library-view { display: flex; height: calc(100vh - 48px); }
@@ -186,7 +188,7 @@
 
         .paper-list-header {
             display: grid;
-            grid-template-columns: 1fr 150px 120px 100px 50px;
+            grid-template-columns: 30px 1fr 150px 120px 100px 50px;
             gap: 12px;
             padding: 8px 12px;
             font-size: 11px;
@@ -198,7 +200,7 @@
 
         .paper-item {
             display: grid;
-            grid-template-columns: 1fr 150px 120px 100px 50px;
+            grid-template-columns: 30px 1fr 150px 120px 100px 50px;
             gap: 12px;
             padding: 14px 12px;
             border-radius: 8px;
@@ -207,6 +209,19 @@
             align-items: center;
         }
         .paper-item:hover { background: var(--bg-hover); }
+        .paper-item.read-complete {
+            background: rgba(46, 160, 67, 0.15);
+            border-left: 3px solid var(--accent-green);
+        }
+        .paper-item.read-complete:hover {
+            background: rgba(46, 160, 67, 0.25);
+        }
+        .paper-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent-green);
+        }
         .paper-title { font-size: 14px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .paper-authors { font-size: 12px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .paper-meta { font-size: 12px; color: var(--text-secondary); }
@@ -1600,6 +1615,106 @@
             color: var(--text-muted);
         }
 
+        /* Book Tower Styles */
+        .book-tower-section {
+            padding: 16px;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+        }
+        .book-tower-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .book-tower-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .book-tower-stats {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+        .book-tower-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: linear-gradient(to top, rgba(139, 69, 19, 0.1), transparent);
+            border-radius: 8px;
+            position: relative;
+        }
+        .book-tower-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .book-tower-container::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+        }
+        .book-tower-container::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
+        }
+        .book-tower-container::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+        .book-tower-shelf {
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(to bottom, #8B4513, #654321);
+            border-radius: 2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+            order: 999; /* 항상 맨 아래에 */
+        }
+        .book-tower-books {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+            width: 100%;
+        }
+        .book-item {
+            width: 85%;
+            border-radius: 3px;
+            margin-top: 2px;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        .book-item:hover {
+            transform: translateX(8px) scale(1.02);
+            box-shadow: 3px 3px 8px rgba(0,0,0,0.25);
+            z-index: 10;
+        }
+        .book-item .book-spine-text {
+            font-size: 9px;
+            font-weight: 500;
+            color: rgba(0,0,0,0.7);
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 0 8px;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+        }
+        .book-tower-empty {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px;
+        }
+
         /* Pomodoro Timer in Toolbar - 심플 버전 */
         .pomodoro-toolbar-timer {
             display: flex;
@@ -2005,6 +2120,25 @@
         </div>
     </div>
 
+    <!-- 번역 프롬프트 설정 모달 -->
+    <div class="modal-overlay" id="translate-prompt-modal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-title">🤓 번역 프롬프트 설정</div>
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+                번역할 때 사용할 프롬프트를 자유롭게 수정하세요.
+            </div>
+            <textarea id="translate-prompt-input" style="width: 100%; height: 200px; background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; color: var(--text-primary); font-size: 13px; resize: vertical; font-family: inherit;"></textarea>
+            <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px; margin-bottom: 12px;">
+                💡 팁: AI 전문 용어는 영어로 유지하고 싶다면 그렇게 지시하세요.<br>
+                <button class="btn" style="font-size: 10px; padding: 2px 8px; margin-top: 6px;" onclick="resetTranslatePrompt()">🔄 기본값으로 초기화</button>
+            </div>
+            <div class="modal-buttons">
+                <button class="btn" onclick="closeModal('translate-prompt-modal')">취소</button>
+                <button class="btn btn-primary" onclick="saveTranslatePrompt()">저장</button>
+            </div>
+        </div>
+    </div>
+
     <!-- TTS 선택 모달 -->
     <div class="modal-overlay" id="tts-select-modal">
         <div class="modal" style="max-width: 400px;">
@@ -2139,6 +2273,19 @@
                     <span class="pomodoro-empty">아직 완료한 세션이 없어요</span>
                 </div>
             </div>
+
+            <!-- Book Tower Section -->
+            <div class="book-tower-section">
+                <div class="book-tower-header">
+                    <span class="book-tower-title">📚 읽은 논문 타워</span>
+                    <span class="book-tower-stats" id="book-tower-stats">0편 / 0p</span>
+                </div>
+                <div class="book-tower-container" id="book-tower-container">
+                    <div class="book-tower-books"></div>
+                    <div class="book-tower-shelf"></div>
+                    <div class="book-tower-empty" id="book-tower-empty">아직 완독한 논문이 없어요</div>
+                </div>
+            </div>
         </div>
 
         <div class="library-main">
@@ -2153,6 +2300,7 @@
             </div>
             <div class="paper-list">
                 <div class="paper-list-header">
+                    <span id="header-read-col" title="다 읽음">✓</span>
                     <span id="header-title-col">제목</span>
                     <span id="header-author-col">저자</span>
                     <span id="header-date-col">추가일</span>
@@ -2173,7 +2321,7 @@
                 <button class="btn" onclick="zoomOut()">−</button>
                 <span class="zoom-display" id="zoom-display">100%</span>
                 <button class="btn" onclick="zoomIn()">+</button>
-                <button class="btn" onclick="zoomFit()">맞춤</button>
+                <button class="btn" id="zoom-fit-btn" onclick="zoomFit()">맞춤</button>
                 <span id="parse-status" style="margin-left: 12px; font-size: 11px; padding: 4px 8px; border-radius: 4px; background: var(--bg-tertiary);"></span>
                 <button class="btn" id="debug-btn" onclick="toggleDebug()">🐛 Debug</button>
                 <!-- Pomodoro Timer in Toolbar -->
@@ -2238,7 +2386,10 @@
                 <div class="notes-section" id="notes-section">
                     <div class="section-header" onclick="toggleSection('notes-section')">
                         <span><span class="collapse-icon">▼</span><span class="section-title">📝 노트</span></span>
-                        <button class="btn translate-btn" id="translate-btn" onclick="event.stopPropagation(); translateParagraph()">🤓 번역하기</button>
+                        <div class="translate-btn-group" onclick="event.stopPropagation();">
+                            <button class="btn translate-btn" id="translate-btn" onclick="translateParagraph()">🤓 번역하기</button>
+                            <button class="btn translate-settings-btn" onclick="showModal('translate-prompt-modal')" title="번역 프롬프트 설정">⚙️</button>
+                        </div>
                     </div>
                     <div class="section-content">
                         <textarea class="notes-textarea" id="notes-textarea" placeholder="메모 작성... (자동 저장)"></textarea>
@@ -2287,7 +2438,7 @@
                             <button class="btn btn-small" onclick="unloadPdfFromClaude()">✕ 해제</button>
                         </div>
                         <div class="claude-messages" id="claude-messages">
-                            <div class="chat-message assistant">논문이 로드되었습니다. 무엇이든 질문해 주세요!</div>
+                            <div class="chat-message assistant" id="claude-initial-message">논문이 로드되었습니다. 무엇이든 질문해 주세요!</div>
                         </div>
                         <div class="claude-input-area">
                             <textarea class="claude-input" id="claude-input" placeholder="논문에 대해 질문하세요..." rows="1"></textarea>
@@ -2313,6 +2464,8 @@
                 this.folderId = null;
                 this.addedAt = new Date().toISOString();
                 this.lastRead = null;
+                this.pageCount = 0; // PDF 페이지 수
+                this.isRead = false; // 다 읽었는지 여부
                 this.sections = []; // { title, paragraphs: [{ id, text, pageNum, bounds, isHeading }] }
                 this.notes = {}; // paragraphId -> note text
                 this.serverParsed = false; // PyMuPDF 서버로 파싱했는지 여부
@@ -2340,7 +2493,7 @@
                         const cached = await dbGet('grobidCache', this.id);
                         if (cached && cached.sections && cached.sections.length > 0) {
                             console.log('✅ Using cached Grobid data');
-                            if (statusEl) statusEl.textContent = '✅ 캐시 사용';
+                            if (statusEl) statusEl.textContent = t('cacheUsed');
                             
                             this.title = cached.title || this.title;
                             this.authors = cached.authors || this.authors;
@@ -2350,7 +2503,7 @@
                             
                             const totalParas = this.sections.reduce((sum, s) => sum + s.paragraphs.length, 0);
                             if (statusEl) {
-                                statusEl.textContent = `✅ 캐시: ${this.sections.length}섹션, ${totalParas}문단`;
+                                statusEl.textContent = t('cacheStatus').replace('{sections}', this.sections.length).replace('{paras}', totalParas);
                                 statusEl.style.color = 'var(--accent-green)';
                             }
                             return true;
@@ -2362,7 +2515,7 @@
                 
                 try {
                     console.log('🔄 Trying Grobid server parsing...');
-                    if (statusEl) statusEl.textContent = '🔄 Grobid 파싱 중...';
+                    if (statusEl) statusEl.textContent = t('grovidParsing');
                     
                     // pdfArrayBuffer가 Array일 수 있으므로 Uint8Array로 변환
                     const uint8Data = pdfArrayBuffer instanceof Uint8Array 
@@ -2512,7 +2665,7 @@
                     }
                     
                     if (statusEl) {
-                        statusEl.textContent = `✅ Grobid: ${this.sections.length}섹션, ${totalParas}문단`;
+                        statusEl.textContent = t('grobidComplete').replace('{sections}', this.sections.length).replace('{paras}', totalParas);
                         statusEl.style.color = 'var(--accent-green)';
                     }
                     
@@ -2520,7 +2673,7 @@
                 } catch (error) {
                     console.warn('⚠️ Grobid parsing failed:', error);
                     if (statusEl) {
-                        statusEl.textContent = '⚠️ Grobid 실패 → DOM 파싱';
+                        statusEl.textContent = t('fallbackMode');
                         statusEl.style.color = 'var(--accent-orange)';
                     }
                     return false;
@@ -2993,6 +3146,8 @@
                     folderId: this.folderId,
                     addedAt: this.addedAt,
                     lastRead: this.lastRead,
+                    pageCount: this.pageCount,
+                    isRead: this.isRead,
                     sections: this.sections,
                     notes: this.notes
                 };
@@ -3096,7 +3251,7 @@
         let audioModeEnabled = false; // 오디오 모드 토글
         let ttsSpeed = parseFloat(localStorage.getItem('tts_speed')) || 1.7; // TTS 속도
         let audioGenerating = false; // 오디오 생성 중 상태
-        let selectedTTSEngine = localStorage.getItem('tts_engine') || null; // 'openai' or 'kokoro'
+        let selectedTTSEngine = localStorage.getItem('tts_engine') || 'openai'; // 'openai' or 'kokoro'
         let pendingTTSAction = null; // 'generate' or 'toggle'
         let currentLang = localStorage.getItem('app_language') || 'ko'; // 'ko' or 'en'
 
@@ -3171,7 +3326,55 @@
                 analyzing: '분석 중...',
                 loading: '로딩 중...',
                 error: '오류',
-                success: '성공'
+                success: '성공',
+                // Reader View - PDF Toolbar
+                zoomFit: '맞춤',
+                startPause: '시작/일시정지',
+                stop: '정지',
+                ttsEngineChange: 'TTS 엔진 변경',
+                // Reader View - Paragraph Section
+                clickParagraph: 'PDF에서 문단을 클릭하세요',
+                // Reader View - Notes Section
+                notes: '📝 노트',
+                translate: '🤓 번역하기',
+                notePlaceholder: '메모 작성... (자동 저장)',
+                // Reader View - All Notes Tab
+                allNotes: '📋 전체 노트',
+                exportNotes: '📤 내보내기',
+                noNotesYet: '아직 작성된 노트가 없습니다',
+                // Reader View - Claude Tab
+                claudeDiscuss: 'Claude와 논문 토론하기',
+                claudeDesc: 'PDF 전체를 Claude에게 전송하여<br>깊이 있는 대화를 나눌 수 있습니다.',
+                loadPdf: '📄 PDF 로드하기',
+                tokenWarning: '⚠️ 토큰 소모가 클 수 있습니다',
+                paperLoaded: '논문 로드됨',
+                unload: '✕ 해제',
+                claudeReady: '논문이 로드되었습니다. 무엇이든 질문해 주세요!',
+                askAboutPaper: '논문에 대해 질문하세요...',
+                // Pomodoro Toast
+                yummy: '냠냠... 맛있다!',
+                focusComplete: '집중 세션 완료!',
+                pomodoroAchieved: '오늘 {count}번째 뽀모도로 달성!',
+                // Drop zone
+                dropPdfHere: 'PDF를 여기에 놓으세요',
+                // OpenAI Modal
+                openaiTtsKey: '🔊 OpenAI TTS API Key',
+                ttsKeyRequired: '💡 TTS 기능을 사용하려면 OpenAI API 키가 필요합니다.',
+                getKey: '키 발급받기 →',
+                // TTS Modal cost
+                costFree: '💰 비용: $0',
+                costEstimating: '💰 예상 비용: 계산 중...',
+                // Pomodoro Toast - Break
+                wokeUp: '으아~ 잘 잤다!',
+                breakEnd: '☀️ 휴식 끝!',
+                readyToFocus: '다시 집중할 준비가 됐어요',
+                // Cache/Server status
+                cacheUsed: '✅ 캐시 사용',
+                cacheStatus: '✅ 캐시: {sections}섹션, {paras}문단',
+                grovidParsing: '🔄 Grobid 파싱 중...',
+                grobidComplete: '✅ Grobid: {sections}섹션, {paras}문단',
+                fallbackMode: '⚠️ 폴백: PDF에서 직접 추출',
+                audioDeleteCache: '오디오 캐시 삭제'
             },
             en: {
                 // Header
@@ -3242,7 +3445,55 @@
                 analyzing: 'Analyzing...',
                 loading: 'Loading...',
                 error: 'Error',
-                success: 'Success'
+                success: 'Success',
+                // Reader View - PDF Toolbar
+                zoomFit: 'Fit',
+                startPause: 'Start/Pause',
+                stop: 'Stop',
+                ttsEngineChange: 'Change TTS Engine',
+                // Reader View - Paragraph Section
+                clickParagraph: 'Click a paragraph in the PDF',
+                // Reader View - Notes Section
+                notes: '📝 Notes',
+                translate: '🤓 Translate',
+                notePlaceholder: 'Write notes... (auto-saved)',
+                // Reader View - All Notes Tab
+                allNotes: '📋 All Notes',
+                exportNotes: '📤 Export',
+                noNotesYet: 'No notes written yet',
+                // Reader View - Claude Tab
+                claudeDiscuss: 'Discuss paper with Claude',
+                claudeDesc: 'Send the entire PDF to Claude<br>for in-depth conversation.',
+                loadPdf: '📄 Load PDF',
+                tokenWarning: '⚠️ May consume many tokens',
+                paperLoaded: 'Paper loaded',
+                unload: '✕ Unload',
+                claudeReady: 'Paper loaded. Ask me anything!',
+                askAboutPaper: 'Ask about the paper...',
+                // Pomodoro Toast
+                yummy: 'Yum yum... Delicious!',
+                focusComplete: 'Focus session complete!',
+                pomodoroAchieved: 'Today\'s {count}th Pomodoro achieved!',
+                // Drop zone
+                dropPdfHere: 'Drop PDF here',
+                // OpenAI Modal
+                openaiTtsKey: '🔊 OpenAI TTS API Key',
+                ttsKeyRequired: '💡 OpenAI API key is required for TTS.',
+                getKey: 'Get API key →',
+                // TTS Modal cost
+                costFree: '💰 Cost: $0',
+                costEstimating: '💰 Est. cost: Calculating...',
+                // Pomodoro Toast - Break
+                wokeUp: 'Aah~ Slept well!',
+                breakEnd: '☀️ Break\'s over!',
+                readyToFocus: 'Ready to focus again',
+                // Cache/Server status
+                cacheUsed: '✅ Using cache',
+                cacheStatus: '✅ Cache: {sections} sections, {paras} paragraphs',
+                grovidParsing: '🔄 Grobid parsing...',
+                grobidComplete: '✅ Grobid: {sections} sections, {paras} paragraphs',
+                fallbackMode: '⚠️ Fallback: Direct PDF extraction',
+                audioDeleteCache: 'Delete audio cache'
             }
         };
 
@@ -3304,6 +3555,177 @@
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.lang === currentLang);
             });
+            
+            // Reader View - PDF Toolbar
+            const zoomFitBtn = document.getElementById('zoom-fit-btn');
+            if (zoomFitBtn) zoomFitBtn.textContent = t('zoomFit');
+            
+            const pomodoroPlayBtn = document.getElementById('pomodoro-play-btn');
+            if (pomodoroPlayBtn) pomodoroPlayBtn.title = t('startPause');
+            
+            const pomodoroStopBtn = document.getElementById('pomodoro-stop-btn');
+            if (pomodoroStopBtn) pomodoroStopBtn.title = t('stop');
+            
+            // Reader View - TTS buttons
+            const ttsEngineBtn = document.getElementById('tts-engine-btn');
+            if (ttsEngineBtn) ttsEngineBtn.title = t('ttsEngineChange');
+            
+            const generateAudioBtn = document.getElementById('generate-audio-btn');
+            if (generateAudioBtn) generateAudioBtn.title = t('generateAudio');
+            
+            const audioModeBtn = document.getElementById('audio-mode-btn');
+            if (audioModeBtn) audioModeBtn.title = t('audioMode');
+            
+            const sectionHint = document.querySelector('.section-hint');
+            if (sectionHint) sectionHint.innerHTML = `<kbd>←</kbd><kbd>→</kbd> ${t('sentenceMove')}`;
+            
+            // Reader View - Section titles
+            const paragraphSectionTitle = document.querySelector('#paragraph-section .section-title');
+            if (paragraphSectionTitle) paragraphSectionTitle.textContent = t('paragraphReader');
+            
+            const notesSectionTitle = document.querySelector('#notes-section .section-title');
+            if (notesSectionTitle) notesSectionTitle.textContent = t('notes');
+            
+            const translateBtn = document.getElementById('translate-btn');
+            if (translateBtn) translateBtn.textContent = t('translate');
+            
+            const notesTextarea = document.getElementById('notes-textarea');
+            if (notesTextarea) notesTextarea.placeholder = t('notePlaceholder');
+            
+            // Reader View - Browser toggle buttons
+            const btnBrowser = document.getElementById('btn-browser');
+            if (btnBrowser) btnBrowser.textContent = t('sectionBrowser');
+            
+            const btnReader = document.getElementById('btn-reader');
+            if (btnReader) btnReader.textContent = t('reader');
+            
+            // Reader View - Empty states
+            const paragraphEmpty = document.querySelector('#paragraph-content .empty-state div:last-child');
+            if (paragraphEmpty) paragraphEmpty.textContent = t('clickParagraph');
+            
+            // All Notes Tab
+            const allNotesTitle = document.querySelector('#tab-notes .section-title');
+            if (allNotesTitle) allNotesTitle.textContent = t('allNotes');
+            
+            const exportNotesBtn = document.querySelector('#tab-notes .btn');
+            if (exportNotesBtn) exportNotesBtn.textContent = t('exportNotes');
+            
+            const allNotesEmpty = document.querySelector('#all-notes-content .empty-state div:last-child');
+            if (allNotesEmpty) allNotesEmpty.textContent = t('noNotesYet');
+            
+            // Claude Tab
+            const claudeTitle = document.querySelector('.claude-title');
+            if (claudeTitle) claudeTitle.textContent = t('claudeDiscuss');
+            
+            const claudeDesc = document.querySelector('.claude-desc');
+            if (claudeDesc) claudeDesc.innerHTML = t('claudeDesc');
+            
+            const claudeLoadBtn = document.getElementById('claude-load-btn');
+            if (claudeLoadBtn) claudeLoadBtn.textContent = t('loadPdf');
+            
+            const claudeWarning = document.querySelector('.claude-warning');
+            if (claudeWarning) claudeWarning.textContent = t('tokenWarning');
+            
+            const claudePdfName = document.getElementById('claude-pdf-name');
+            if (claudePdfName && claudePdfName.textContent.includes('로드') || (claudePdfName && claudePdfName.textContent.includes('loaded'))) {
+                claudePdfName.textContent = t('paperLoaded');
+            }
+            
+            const claudeUnloadBtn = document.querySelector('.claude-status .btn');
+            if (claudeUnloadBtn) claudeUnloadBtn.textContent = t('unload');
+            
+            const claudeInput = document.getElementById('claude-input');
+            if (claudeInput) claudeInput.placeholder = t('askAboutPaper');
+            
+            // Modals
+            // API Modal
+            const apiModalTitle = document.querySelector('#api-modal .modal-title');
+            if (apiModalTitle) apiModalTitle.textContent = '🔑 Claude API Key';
+            
+            const apiModalBtns = document.querySelectorAll('#api-modal .modal-buttons .btn');
+            if (apiModalBtns[0]) apiModalBtns[0].textContent = t('cancel');
+            if (apiModalBtns[1]) apiModalBtns[1].textContent = t('save');
+            
+            // OpenAI API Modal
+            const openaiModalTitle = document.querySelector('#openai-api-modal .modal-title');
+            if (openaiModalTitle) openaiModalTitle.textContent = t('openaiTtsKey');
+            
+            const openaiModalHint = document.querySelector('#openai-api-modal div[style*="font-size: 11px"]');
+            if (openaiModalHint) {
+                openaiModalHint.innerHTML = `${t('ttsKeyRequired')}<br><a href="https://platform.openai.com/api-keys" target="_blank" style="color: var(--accent-blue);">${t('getKey')}</a>`;
+            }
+            
+            const openaiModalBtns = document.querySelectorAll('#openai-api-modal .modal-buttons .btn');
+            if (openaiModalBtns[0]) openaiModalBtns[0].textContent = t('cancel');
+            if (openaiModalBtns[1]) openaiModalBtns[1].textContent = t('save');
+            
+            // TTS Select Modal
+            const ttsModalTitle = document.querySelector('#tts-select-modal .modal-title');
+            if (ttsModalTitle) ttsModalTitle.textContent = t('ttsEngineSelect');
+            
+            const ttsOptions = document.querySelectorAll('#tts-select-modal .tts-option');
+            if (ttsOptions[0]) {
+                const kokoroTitle = ttsOptions[0].querySelector('div[style*="font-weight: 600"]');
+                const kokoroDesc = ttsOptions[0].querySelector('div[style*="font-size: 12px"]');
+                const kokoroCost = ttsOptions[0].querySelector('div[style*="accent-green"]');
+                if (kokoroTitle) kokoroTitle.textContent = t('kokoroTTS');
+                if (kokoroDesc) kokoroDesc.textContent = t('kokoroDesc');
+                if (kokoroCost) kokoroCost.textContent = t('costFree');
+            }
+            if (ttsOptions[1]) {
+                const openaiTitle = ttsOptions[1].querySelector('div[style*="font-weight: 600"]');
+                const openaiDesc = ttsOptions[1].querySelector('div[style*="font-size: 12px"]');
+                if (openaiTitle) openaiTitle.textContent = t('openaiTTS');
+                if (openaiDesc) openaiDesc.textContent = t('openaiDesc');
+            }
+            
+            const ttsModalBtns = document.querySelectorAll('#tts-select-modal .modal-buttons .btn');
+            if (ttsModalBtns[0]) ttsModalBtns[0].textContent = t('cancel');
+            
+            // Folder Modal
+            const folderModalTitle = document.querySelector('#folder-modal .modal-title');
+            if (folderModalTitle) folderModalTitle.textContent = t('newFolderTitle');
+            
+            const folderNameInput = document.getElementById('folder-name-input');
+            if (folderNameInput) folderNameInput.placeholder = t('folderName');
+            
+            const folderModalBtns = document.querySelectorAll('#folder-modal .modal-buttons .btn');
+            if (folderModalBtns[0]) folderModalBtns[0].textContent = t('cancel');
+            if (folderModalBtns[1]) folderModalBtns[1].textContent = t('create');
+            
+            // Pomodoro Settings Modal
+            const pomodoroModalTitle = document.querySelector('#pomodoro-settings-modal .modal-title');
+            if (pomodoroModalTitle) pomodoroModalTitle.textContent = t('pomodoroSettings');
+            
+            const pomodoroLabels = document.querySelectorAll('.pomodoro-setting-label');
+            if (pomodoroLabels[0]) pomodoroLabels[0].textContent = t('focusTime');
+            if (pomodoroLabels[1]) pomodoroLabels[1].textContent = t('breakTime');
+            
+            const pomodoroUnits = document.querySelectorAll('.pomodoro-setting-unit');
+            pomodoroUnits.forEach(unit => unit.textContent = t('minutes'));
+            
+            const pomodoroModalBtns = document.querySelectorAll('#pomodoro-settings-modal .modal-buttons .btn');
+            if (pomodoroModalBtns[0]) pomodoroModalBtns[0].textContent = t('cancel');
+            if (pomodoroModalBtns[1]) pomodoroModalBtns[1].textContent = t('save');
+            
+            // Pomodoro Toast
+            const dogEatingMsg = document.querySelector('.dog-eating-message');
+            if (dogEatingMsg) dogEatingMsg.textContent = t('yummy');
+            
+            const pomodoroToastTitle = document.getElementById('pomodoro-toast-title');
+            if (pomodoroToastTitle) pomodoroToastTitle.textContent = t('focusComplete');
+            
+            // Drop zone
+            const dropZoneText = document.querySelector('.drop-zone-content div:last-child');
+            if (dropZoneText) dropZoneText.textContent = t('dropPdfHere');
+            
+            // Pomodoro settings button title
+            const pomodoroSettingsBtn = document.querySelector('.pomodoro-settings-btn');
+            if (pomodoroSettingsBtn) pomodoroSettingsBtn.title = currentLang === 'ko' ? '설정' : 'Settings';
+            
+            // Claude initial message (only update if not in chat)
+            const claudeInitialMsg = document.getElementById('claude-initial-message');
+            if (claudeInitialMsg) claudeInitialMsg.textContent = t('claudeReady');
             
             // Re-render papers to update UI
             renderPapers();
@@ -3591,18 +4013,121 @@
             container.innerHTML = list.map(p => {
                 const folder = folders.find(f => f.id === p.folderId);
                 return `
-                    <div class="paper-item" onclick="openPaper('${p.id}')">
+                    <div class="paper-item ${p.isRead ? 'read-complete' : ''}" onclick="openPaper('${p.id}')">
+                        <input type="checkbox" class="paper-checkbox" 
+                            ${p.isRead ? 'checked' : ''} 
+                            onclick="event.stopPropagation(); toggleReadStatus('${p.id}')"
+                            title="다 읽음 표시">
                         <div class="paper-title">${p.title || p.fileName}</div>
                         <div class="paper-authors">${p.authors || '-'}</div>
-                        <div class="paper-meta">${formatDate(p.addedAt)}</div>
+                        <div class="paper-meta">${formatDate(p.addedAt)}${p.pageCount ? ' · ' + p.pageCount + 'p' : ''}</div>
                         <div class="paper-folder">${folder ? '📁 ' + folder.name : '-'}</div>
                         <div class="paper-actions">
-                            <button class="audio-cache-btn" onclick="event.stopPropagation(); deleteAudioCache('${p.id}')" title="${currentLang === 'ko' ? '오디오 캐시 삭제' : 'Delete audio cache'}">🔊</button>
+                            <button class="audio-cache-btn" onclick="event.stopPropagation(); deleteAudioCache('${p.id}')" title="${t('audioDeleteCache')}">🔊</button>
                             <button class="delete-btn" onclick="event.stopPropagation(); deletePaper('${p.id}')">🗑️</button>
                         </div>
                     </div>
                 `;
             }).join('');
+            
+            // 책 타워 업데이트
+            renderBookTower();
+        }
+
+        // 읽음 상태 토글
+        async function toggleReadStatus(paperId) {
+            const paper = papers.find(p => p.id === paperId);
+            if (!paper) return;
+            
+            paper.isRead = !paper.isRead;
+            await dbPut('papers', paper.toJSON ? paper.toJSON() : paper);
+            renderPapers();
+        }
+
+        // 책 타워 렌더링
+        function renderBookTower() {
+            const container = document.getElementById('book-tower-container');
+            const emptyMsg = document.getElementById('book-tower-empty');
+            const statsEl = document.getElementById('book-tower-stats');
+            
+            if (!container) return;
+            
+            const readPapers = papers.filter(p => p.isRead);
+            const totalPages = readPapers.reduce((sum, p) => sum + (p.pageCount || 10), 0);
+            
+            // 통계 업데이트
+            if (statsEl) {
+                statsEl.textContent = `${readPapers.length}편 / ${totalPages}p`;
+            }
+            
+            // 기존 책들 제거 (선반 제외)
+            const existingBooks = container.querySelectorAll('.book-item');
+            existingBooks.forEach(book => book.remove());
+            
+            if (readPapers.length === 0) {
+                if (emptyMsg) emptyMsg.style.display = 'block';
+                return;
+            }
+            
+            if (emptyMsg) emptyMsg.style.display = 'none';
+            
+            // 파스텔톤 책 색상 팔레트
+            const bookColors = [
+                '#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF',
+                '#E2B6CF', '#C9B1FF', '#B5EAD7', '#FFDAC1', '#C7CEEA',
+                '#F0E6EF', '#E8D5B7', '#B8E0D2', '#D6EADF', '#EAC4D5',
+                '#A8D8EA', '#AA96DA', '#FCBAD3', '#F6EAC2', '#D4A5A5'
+            ];
+            
+            // 기존 책들 영역 찾기 또는 생성
+            let booksContainer = container.querySelector('.book-tower-books');
+            if (!booksContainer) {
+                booksContainer = document.createElement('div');
+                booksContainer.className = 'book-tower-books';
+                const shelf = container.querySelector('.book-tower-shelf');
+                container.insertBefore(booksContainer, shelf);
+            }
+            booksContainer.innerHTML = '';
+            
+            // 읽은 논문들을 책으로 쌓기 (최신 것이 위로)
+            readPapers
+                .sort((a, b) => new Date(b.addedAt) - new Date(a.addedAt))
+                .forEach((paper, index) => {
+                    const book = document.createElement('div');
+                    book.className = 'book-item';
+                    
+                    // 페이지 수에 비례한 두께 (최소 18px, 최대 40px)
+                    const pages = paper.pageCount || 10;
+                    const thickness = Math.min(Math.max(Math.floor(pages / 2) + 10, 18), 40);
+                    book.style.height = thickness + 'px';
+                    
+                    // 파스텔 색상
+                    const color = bookColors[index % bookColors.length];
+                    book.style.background = `linear-gradient(to bottom, ${color}, ${adjustColor(color, -15)})`;
+                    
+                    // 제목 표시
+                    const titleText = document.createElement('span');
+                    titleText.className = 'book-spine-text';
+                    titleText.textContent = paper.title || paper.fileName;
+                    book.appendChild(titleText);
+                    
+                    book.title = `${paper.title || paper.fileName}\n${pages}페이지`;
+                    book.onclick = (e) => { e.stopPropagation(); openPaper(paper.id); };
+                    
+                    booksContainer.appendChild(book);
+                });
+            
+            // 스크롤을 맨 아래로 (선반 보이게)
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // 색상 밝기 조절 헬퍼
+        function adjustColor(hex, amount) {
+            const num = parseInt(hex.slice(1), 16);
+            const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+            const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount));
+            const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount));
+            return '#' + (0x1000000 + r * 0x10000 + g * 0x100 + b).toString(16).slice(1);
         }
 
         function updateCounts() {
@@ -3675,10 +4200,11 @@
                 paper.fileSize = file.size;
                 paper.folderId = currentFilter === 'folder' ? currentFolderId : null;
                 paper.title = file.name.replace('.pdf', '');
+                paper.pageCount = pdf.numPages; // 페이지 수 저장
 
                 // 기본 메타데이터만 추출 (구조는 렌더링 후 추출)
                 await paper.extractBasicInfo(pdf);
-                console.log('📋 After extractBasicInfo - title:', paper.title);
+                console.log('📋 After extractBasicInfo - title:', paper.title, 'pages:', paper.pageCount);
 
                 // 저장
                 await dbPut('pdfData', { id, data: dataArray });
@@ -3752,9 +4278,12 @@
             document.getElementById('reader-view').classList.add('active');
             document.getElementById('back-btn').style.display = 'block';
             document.getElementById('header-title').textContent = currentPaper.title;
+            
+            // Reader View 언어 적용
+            applyLanguage();
 
             const container = document.getElementById('pdf-container');
-            container.innerHTML = '<div class="loading"><div class="spinner"></div>로딩 중...</div>';
+            container.innerHTML = `<div class="loading"><div class="spinner"></div>${t('loading')}</div>`;
 
             try {
                 const record = await dbGet('pdfData', id);
@@ -3771,6 +4300,12 @@
                 document.getElementById('header-title').textContent = currentPaper.title;
                 
                 pdfDoc = await pdfjsLib.getDocument({ data: uint8 }).promise;
+
+                // 페이지 수 업데이트 (기존 논문인 경우)
+                if (!currentPaper.pageCount || currentPaper.pageCount === 0) {
+                    currentPaper.pageCount = pdfDoc.numPages;
+                    await dbPut('papers', currentPaper.toJSON());
+                }
 
                 // 가로 꽉 차게 스케일 계산
                 const page1 = await pdfDoc.getPage(1);
@@ -4968,7 +5503,42 @@
         }
 
         // ========== Chat ==========
-        const TRANSLATE_PROMPT = `너는 최신 AI기술을 다 아는 전문가야. 영어 논문들을 친구한테 말하듯이 반말로해줘 AI에서 많이 쓰이는 영단어들은 한국말로 번역하지마 주로 조사나 문장구조만 한국어로해. 예를들어 annotator는 번역하지말고 annotator라고하고 모델도 걍 model, 데이터도 data. 이런식으로 번역해. Our data collection approach can be divided based on the post-training method, i.e., SFT or preference tuning. 이걸 예를어 다음과 같이 번역해 우리의 data collection approach는 post-training method 즉 SFT 또는 preference tuning에 따라 나뉠수있다. 이런식으로... 알겠지? 그리고 불릿포인트로 보기좋게 정리해서 보여줘. 시킨거말고는 하지마. 뭘 해줄까? 이런거 묻지마.`;
+        const DEFAULT_TRANSLATE_PROMPT = `너는 최신 AI기술을 다 아는 전문가야. 영어 논문들을 친구한테 말하듯이 반말로해줘 AI에서 많이 쓰이는 영단어들은 한국말로 번역하지마 주로 조사나 문장구조만 한국어로해. 예를들어 annotator는 번역하지말고 annotator라고하고 모델도 걍 model, 데이터도 data. 이런식으로 번역해. Our data collection approach can be divided based on the post-training method, i.e., SFT or preference tuning. 이걸 예를어 다음과 같이 번역해 우리의 data collection approach는 post-training method 즉 SFT 또는 preference tuning에 따라 나뉠수있다. 이런식으로... 알겠지? 그리고 불릿포인트로 보기좋게 정리해서 보여줘. 시킨거말고는 하지마. 뭘 해줄까? 이런거 묻지마.`;
+        let translatePrompt = DEFAULT_TRANSLATE_PROMPT;
+
+        // 저장된 프롬프트 불러오기
+        function loadTranslatePrompt() {
+            const saved = localStorage.getItem('focusread-translate-prompt');
+            if (saved) {
+                translatePrompt = saved;
+            }
+            const input = document.getElementById('translate-prompt-input');
+            if (input) input.value = translatePrompt;
+        }
+
+        // 프롬프트 저장
+        function saveTranslatePrompt() {
+            const input = document.getElementById('translate-prompt-input');
+            translatePrompt = input.value.trim() || DEFAULT_TRANSLATE_PROMPT;
+            localStorage.setItem('focusread-translate-prompt', translatePrompt);
+            closeModal('translate-prompt-modal');
+            showToast('번역 프롬프트가 저장되었습니다!');
+        }
+
+        // 기본값으로 초기화
+        function resetTranslatePrompt() {
+            const input = document.getElementById('translate-prompt-input');
+            input.value = DEFAULT_TRANSLATE_PROMPT;
+        }
+
+        // 모달 열릴 때 현재 프롬프트 표시
+        const origShowModal = showModal;
+        showModal = function(id) {
+            if (id === 'translate-prompt-modal') {
+                loadTranslatePrompt();
+            }
+            origShowModal(id);
+        };
 
         async function translateParagraph() {
             if (!selectedParagraph) {
@@ -5002,7 +5572,7 @@
                         max_tokens: 2048,
                         messages: [{
                             role: 'user',
-                            content: TRANSLATE_PROMPT + '\n\n다음 문단을 번역해:\n\n' + selectedParagraph.text
+                            content: translatePrompt + '\n\n다음 문단을 번역해:\n\n' + selectedParagraph.text
                         }]
                     })
                 });
@@ -5138,15 +5708,15 @@
                 document.getElementById('claude-load-section').style.display = 'none';
                 document.getElementById('claude-chat-section').style.display = 'flex';
                 document.getElementById('claude-pdf-name').textContent = currentPaper.title || currentPaper.fileName;
-                document.getElementById('claude-messages').innerHTML = '<div class="chat-message assistant">논문이 로드되었습니다! 무엇이든 질문해 주세요. 🎓</div>';
+                document.getElementById('claude-messages').innerHTML = `<div class="chat-message assistant">${t('claudeReady')} 🎓</div>`;
                 
                 console.log('PDF loaded for Claude, base64 length:', base64.length);
             } catch (err) {
                 console.error('PDF load error:', err);
-                alert('PDF 로드 실패: ' + err.message);
+                alert((currentLang === 'ko' ? 'PDF 로드 실패: ' : 'PDF load failed: ') + err.message);
             } finally {
                 btn.disabled = false;
-                btn.textContent = '📄 PDF 로드하기';
+                btn.textContent = t('loadPdf');
             }
         }
         
@@ -5165,7 +5735,7 @@
             claudeLoadedPaperId = null;
             document.getElementById('claude-load-section').style.display = 'flex';
             document.getElementById('claude-chat-section').style.display = 'none';
-            document.getElementById('claude-messages').innerHTML = '<div class="chat-message assistant">논문이 로드되었습니다! 무엇이든 질문해 주세요. 🎓</div>';
+            document.getElementById('claude-messages').innerHTML = `<div class="chat-message assistant">${t('claudeReady')} 🎓</div>`;
         }
         
         async function sendClaudeChat() {
@@ -6223,10 +6793,10 @@
                         <div class="tomato">🍅</div>
                         <div class="dog-tail"></div>
                     </div>
-                    <div class="dog-eating-message">냠냠... 맛있다!</div>
+                    <div class="dog-eating-message">${t('yummy')}</div>
                 `;
-                title.textContent = '🎉 집중 세션 완료!';
-                sub.textContent = `오늘 ${pomodoroState.todayCount}번째 뽀모도로 달성!`;
+                title.textContent = '🎉 ' + t('focusComplete');
+                sub.textContent = t('pomodoroAchieved').replace('{count}', pomodoroState.todayCount);
                 tomatoes.textContent = '🍅'.repeat(pomodoroState.todayCount);
                 tomatoes.style.display = 'block';
             } else {
@@ -6246,10 +6816,10 @@
                         <div class="zzz">💤</div>
                         <div class="dog-tail"></div>
                     </div>
-                    <div class="dog-eating-message">으아~ 잘 잤다!</div>
+                    <div class="dog-eating-message">${t('wokeUp')}</div>
                 `;
-                title.textContent = '☀️ 휴식 끝!';
-                sub.textContent = '다시 집중할 준비가 됐어요';
+                title.textContent = t('breakEnd');
+                sub.textContent = t('readyToFocus');
                 tomatoes.style.display = 'none';
             }
             
