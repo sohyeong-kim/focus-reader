@@ -96,13 +96,42 @@ This starts:
 
 ### Option 2: Build from Source (Developers)
 
-\`\`\`bash
+#### Prerequisites
+- **Node.js** v18+ ([download](https://nodejs.org))
+- **Python** 3.9+ (`brew install python3` on Mac)
+- **Docker Desktop** (running)
+- **Git**
+
+#### Steps
+
+```bash
+# 1. Clone
 git clone https://github.com/thgud1624/focus-reader.git
 cd focus-reader
+
+# 2. Install Node dependencies (Electron, etc.)
 npm install
+
+# 3. Install Python dependencies (REQUIRED - app spawns a local PDF parsing server)
+pip3 install fastapi uvicorn httpx spacy
+python3 -m spacy download en_core_web_sm
+python3 -m spacy download ko_core_news_sm   # optional, for Korean PDFs
+
+# 4. Start Docker services (Grobid + Kokoro TTS)
 docker-compose up -d
+
+# 5. Run the app
 npm start
-\`\`\`
+```
+
+> 💡 If `pip3` shows `externally-managed-environment` error, use `pip3 install --user ...` or a virtualenv.
+
+#### Build a DMG installer (optional)
+
+```bash
+npm run build:mac
+# Output: dist/Focus Reader-1.0.0.dmg
+```
 
 ---
 
@@ -110,7 +139,7 @@ npm start
 
 1. **Open PDF**: Select a PDF file in the app
 2. **Click Paragraph**: Click on a paragraph you want to read
-3. **Navigate Sentences**: Use arrow keys \`←\` \`→\` or \`↑\` \`↓\`
+3. **Navigate Sentences**: Use arrow keys `←` `→` or `↑` `↓`
 
 ---
 
@@ -156,25 +185,33 @@ npm start
 ## ❓ Troubleshooting
 
 ### App won't open / "Damaged app" warning
-\`\`\`bash
+```bash
 xattr -cr /Applications/Focus\\ Reader.app
-\`\`\`
+```
 
 ### "docker: command not found"
 → Docker Desktop not installed or not running
 
 ### PDF parsing fails
 → Check Docker is running (whale icon 🐳)
-→ Run: \`docker-compose up -d\`
-→ Verify: \`docker ps\` should show grobid, spacy, kokoro
+→ Run: `docker-compose up -d`
+→ Verify: `docker ps` should show grobid, spacy, kokoro
+
+### `No module named 'fastapi'` or `electron: command not found`
+→ Missing dependencies. From the project folder:
+```bash
+npm install
+pip3 install fastapi uvicorn httpx spacy
+python3 -m spacy download en_core_web_sm
+```
 
 ---
 
 ## 🌐 Language
 
 The app supports **English** and **Korean**. Toggle in the header:
-- Click \`한국어\` for Korean
-- Click \`ENG\` for English
+- Click `한국어` for Korean
+- Click `ENG` for English
 
 ---
 
@@ -201,12 +238,12 @@ The app supports **English** and **Korean**. Toggle in the header:
 
 터미널 열고:
 
-\`\`\`bash
+```bash
 # 레포 클론 후 Docker Compose로 시작
 git clone https://github.com/thgud1624/focus-reader.git
 cd focus-reader
 docker-compose up -d
-\`\`\`
+```
 
 > ⏳ 처음엔 다운로드 때문에 5~10분 걸려요!
 
@@ -226,13 +263,42 @@ docker-compose up -d
 
 ### 방법 2: 소스코드로 설치 (개발자용)
 
-\`\`\`bash
+#### 필수 프로그램
+- **Node.js** v18+ ([다운로드](https://nodejs.org))
+- **Python** 3.9+ (Mac: `brew install python3`)
+- **Docker Desktop** (실행 중)
+- **Git**
+
+#### 설치 단계
+
+```bash
+# 1. 클론
 git clone https://github.com/thgud1624/focus-reader.git
 cd focus-reader
+
+# 2. Node 의존성 설치 (Electron 등)
 npm install
+
+# 3. Python 의존성 설치 (필수! 앱이 로컬 PDF 파싱 서버를 띄움)
+pip3 install fastapi uvicorn httpx spacy
+python3 -m spacy download en_core_web_sm
+python3 -m spacy download ko_core_news_sm   # 한국어 PDF 처리용
+
+# 4. Docker 서비스 시작 (Grobid + Kokoro TTS)
 docker-compose up -d
+
+# 5. 앱 실행
 npm start
-\`\`\`
+```
+
+> 💡 `pip3`에서 `externally-managed-environment` 에러가 나면 `pip3 install --user ...` 또는 venv 사용하세요.
+
+#### DMG 인스톨러 빌드 (선택)
+
+```bash
+npm run build:mac
+# 결과: dist/Focus Reader-1.0.0.dmg
+```
 
 ---
 
@@ -240,7 +306,7 @@ npm start
 
 1. **PDF 열기**: 앱에서 PDF 파일 선택
 2. **문단 클릭**: PDF에서 읽고싶은 문단 클릭
-3. **문장 이동**: 방향키 \`←\` \`→\` 또는 \`↑\` \`↓\`
+3. **문장 이동**: 방향키 `←` `→` 또는 `↑` `↓`
 
 ---
 
@@ -286,25 +352,33 @@ npm start
 ## ❓ 문제 해결
 
 ### 앱이 안 열려요 / "손상된 앱" 경고
-\`\`\`bash
+```bash
 xattr -cr /Applications/Focus\\ Reader.app
-\`\`\`
+```
 
 ### "docker: command not found"
 → Docker Desktop 설치 안 됨 / 안 켜짐
 
 ### PDF 파싱이 안 돼요
 → Docker Desktop이 켜져있는지 확인 (고래 아이콘 🐳)
-→ 실행: \`docker-compose up -d\`
-→ 확인: \`docker ps\` 쳤을 때 grobid, spacy, kokoro 보여야 함
+→ 실행: `docker-compose up -d`
+→ 확인: `docker ps` 쳤을 때 grobid, spacy, kokoro 보여야 함
+
+### `No module named 'fastapi'` 또는 `electron: command not found`
+→ 의존성 설치 안 됨. 프로젝트 폴더에서:
+```bash
+npm install
+pip3 install fastapi uvicorn httpx spacy
+python3 -m spacy download en_core_web_sm
+```
 
 ---
 
 ## 🌐 언어 설정
 
 앱은 **영어**와 **한국어**를 지원합니다. 헤더에서 토글:
-- \`한국어\` 클릭하면 한국어
-- \`ENG\` 클릭하면 영어
+- `한국어` 클릭하면 한국어
+- `ENG` 클릭하면 영어
 
 ---
 
