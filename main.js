@@ -101,12 +101,12 @@ function stopPythonServer() {
   }
 }
 
-// Check Docker/Grobid status
-async function checkGrobid() {
+// Check Docling parser status (replaces previous Grobid check)
+async function checkDocling() {
   try {
     const http = require('http');
     return new Promise((resolve) => {
-      const req = http.get('http://localhost:8070/api/isalive', (res) => {
+      const req = http.get('http://localhost:8000/health', (res) => {
         resolve(res.statusCode === 200);
       });
       req.on('error', () => resolve(false));
@@ -121,15 +121,14 @@ async function checkGrobid() {
 }
 
 app.whenReady().then(async () => {
-  // Check if Grobid is running
-  const grobidRunning = await checkGrobid();
-  if (!grobidRunning) {
+  const doclingRunning = await checkDocling();
+  if (!doclingRunning) {
     const result = await dialog.showMessageBox({
       type: 'warning',
-      title: 'Grobid Not Running',
-      message: 'Grobid server is not running on port 8070.',
-      detail: 'To use PDF parsing features, please start Grobid with Docker:\n\n' +
-              'docker run -d --name grobid -p 8070:8070 lfoppiano/grobid:0.8.0\n\n' +
+      title: 'Docling Server Not Running',
+      message: 'PDF parser (Docling) is not running on port 8000.',
+      detail: 'To use PDF parsing features, start the backend with Docker:\n\n' +
+              'docker compose up -d docling kokoro\n\n' +
               'Click "Continue" to open the app anyway (PDF parsing won\'t work).',
       buttons: ['Continue', 'Quit'],
       defaultId: 0
@@ -140,12 +139,6 @@ app.whenReady().then(async () => {
       return;
     }
   }
-
-  // Start Python server
-  startPythonServer();
-
-  // Wait a bit for server to start
-  await new Promise(resolve => setTimeout(resolve, 2000));
 
   createWindow();
 

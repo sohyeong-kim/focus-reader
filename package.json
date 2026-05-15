@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "start:server": "python3 server_grobid_v2.py",
+    "start:server": "docker compose up -d docling kokoro",
+    "stop:server": "docker compose stop docling kokoro",
     "build": "electron-builder",
     "build:mac": "electron-builder --mac",
     "build:win": "electron-builder --win",
