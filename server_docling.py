@@ -136,8 +136,33 @@ async def process_pdf(file: UploadFile = File(...)):
         else:
             frontend_type = "paragraph"
             sentences = _split_sentences(text)
-            # Docling does not expose per-sentence bbox; share the paragraph bbox.
-            sentence_data = [{"text": st, "bboxes": bboxes} for st in sentences]
+            # Docling does not expose per-sentence bbox. Approximate each sentence's
+            # bbox by slicing the paragraph bbox vertically in proportion to where
+            # the sentence sits in the paragraph's character span. This is rough
+            # but gives the reader-overlay something to move within a paragraph
+            # instead of highlighting the whole block on every sentence.
+            sentence_data = []
+            total_chars = sum(len(s) for s in sentences) or 1
+            cum = 0
+            for s in sentences:
+                s_len = len(s)
+                start_frac = cum / total_chars
+                end_frac = (cum + s_len) / total_chars
+                cum += s_len
+                if not bboxes:
+                    sentence_data.append({"text": s, "bboxes": []})
+                    continue
+                sb = []
+                for bb in bboxes:
+                    bh = bb["height"]
+                    sb.append({
+                        "page": bb["page"],
+                        "x": bb["x"],
+                        "y": bb["y"] + start_frac * bh,
+                        "width": bb["width"],
+                        "height": max(2.0, (end_frac - start_frac) * bh),
+                    })
+                sentence_data.append({"text": s, "bboxes": sb})
 
         paragraphs.append({
             "id": para_id,
