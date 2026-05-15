@@ -6531,9 +6531,56 @@
                         ttsCache.set(cacheKey, audioBlob);
                         console.log('✅ Found in DB cache');
                     } else {
-                        // 캐시 없음 - 생성 안 됨
-                        console.log('⚠️ No cached audio for this sentence, cacheKey:', cacheKey);
-                        return;
+                        // 캐시 없음 → 재생 흐름이 끊기지 않도록 즉석에서 생성한다.
+                        // (generateAllAudio worker가 실패한 sentence 등 fallback)
+                        console.log('⚠️ cache miss; generating on-demand:', cacheKey);
+                        try {
+                            let resp;
+                            if (selectedTTSEngine === 'kokoro') {
+                                resp = await fetch('http://localhost:8001/tts', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ text, voice: 'am_echo', speed: 1.0 })
+                                });
+                            } else if (openaiApiKey) {
+                                resp = await fetch('https://api.openai.com/v1/audio/speech', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Authorization': `Bearer ${openaiApiKey}`,
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        model: 'gpt-4o-mini-tts-2025-12-15',
+                                        input: text,
+                                        voice: 'cedar',
+                                        speed: 1.0
+                                    })
+                                });
+                            } else {
+                                console.log('⚠️ no TTS engine configured for on-demand generation');
+                                return;
+                            }
+                            if (!resp.ok) {
+                                console.error('On-demand TTS failed:', resp.status);
+                                return;
+                            }
+                            audioBlob = await resp.blob();
+                            ttsCache.set(cacheKey, audioBlob);
+                            try {
+                                const ab = await audioBlob.arrayBuffer();
+                                await dbPut('audioCache', {
+                                    id: cacheKey,
+                                    paperId: currentPaper.id,
+                                    data: new Uint8Array(ab)
+                                });
+                            } catch (dbErr) {
+                                console.warn('DB cache write failed (continuing):', dbErr);
+                            }
+                            console.log('✅ on-demand audio generated and cached');
+                        } catch (genErr) {
+                            console.error('On-demand TTS error:', genErr);
+                            return;
+                        }
                     }
                 }
                 
