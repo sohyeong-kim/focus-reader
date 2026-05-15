@@ -391,9 +391,9 @@
             z-index: 5;
         }
         .sentence-block.active {
-            background: rgba(255, 235, 59, 0.55);
-            box-shadow: 0 0 6px rgba(255, 196, 0, 0.7);
-            mix-blend-mode: multiply;
+            background: rgba(124, 106, 239, 0.35);
+            border: 2px solid var(--accent-blue);
+            box-shadow: 0 0 8px rgba(124, 106, 239, 0.5);
         }
         
         .paragraph-block.is-heading {
@@ -2487,12 +2487,14 @@
             async extractFromServer(pdfArrayBuffer, useCache = true) {
                 const statusEl = document.getElementById('parse-status');
                 
-                // 캐시 확인
+                // 캐시 확인 — 옛 schema(sentence-bbox = paragraph-bbox)인 경우 무효화
+                const CACHE_SCHEMA = 'docling-v2';
                 if (useCache) {
                     try {
                         const cached = await dbGet('grobidCache', this.id);
-                        if (cached && cached.sections && cached.sections.length > 0) {
-                            console.log('✅ Using cached Grobid data');
+                        if (cached && cached.sections && cached.sections.length > 0
+                                && cached.bboxSchema === CACHE_SCHEMA) {
+                            console.log('✅ Using cached parser data');
                             if (statusEl) statusEl.textContent = t('cacheUsed');
                             
                             this.title = cached.title || this.title;
@@ -2650,16 +2652,17 @@
                         console.log(`   [${s.title}] ${s.paragraphs.length} paragraphs`);
                     });
                     
-                    // 캐시에 저장 (bounds는 없는 상태로 저장, 나중에 매칭 후 업데이트)
+                    // 캐시에 저장 (schema 버전 포함 — 옛 cache는 자동 무효)
                     try {
                         await dbPut('grobidCache', {
                             id: this.id,
                             title: this.title,
                             authors: this.authors,
                             sections: this.sections,
-                            parsedAt: new Date().toISOString()
+                            parsedAt: new Date().toISOString(),
+                            bboxSchema: CACHE_SCHEMA
                         });
-                        console.log('💾 Grobid result cached');
+                        console.log('💾 Parser result cached');
                     } catch (e) {
                         console.warn('Cache save failed:', e);
                     }
