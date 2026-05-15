@@ -6115,80 +6115,100 @@
             
             let generated = 0;
             let errors = 0;
-            
-            // 순차적으로 생성
-            for (const sent of toGenerate) {
-                try {
-                    let audioBlob;
-                    
-                    if (selectedTTSEngine === 'kokoro') {
-                        // Kokoro TTS (로컬)
-                        const response = await fetch('http://localhost:8001/tts', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                text: sent.text,
-                                voice: 'am_echo',
-                                speed: 1.0
-                            })
-                        });
-                        
-                        if (!response.ok) {
+
+            // Kokoro는 컨테이너 CPU 추론이라 동시성을 작게, OpenAI는 RPM 한도 여유가 커서 8.
+            const CONCURRENCY = selectedTTSEngine === 'kokoro' ? 3 : 8;
+            const MAX_RETRIES = 5;
+
+            async function fetchOne(sent) {
+                let attempt = 0;
+                while (true) {
+                    let response;
+                    try {
+                        if (selectedTTSEngine === 'kokoro') {
+                            response = await fetch('http://localhost:8001/tts', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    text: sent.text,
+                                    voice: 'am_echo',
+                                    speed: 1.0
+                                })
+                            });
+                        } else {
+                            response = await fetch('https://api.openai.com/v1/audio/speech', {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${openaiApiKey}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    model: 'gpt-4o-mini-tts',
+                                    input: sent.text,
+                                    voice: 'cedar',
+                                    speed: 1.0
+                                })
+                            });
+                        }
+                    } catch (netErr) {
+                        if (attempt < MAX_RETRIES) {
+                            await new Promise(r => setTimeout(r, 500 * Math.pow(2, attempt)));
+                            attempt++;
+                            continue;
+                        }
+                        throw netErr;
+                    }
+
+                    // 429/503에는 Retry-After 또는 지수 백오프로 재시도
+                    if (response.status === 429 || response.status === 503) {
+                        if (attempt < MAX_RETRIES) {
+                            const retryAfter = parseFloat(response.headers.get('retry-after') || '0') * 1000;
+                            const backoff = retryAfter > 0 ? retryAfter : Math.min(8000, 500 * Math.pow(2, attempt));
+                            await new Promise(r => setTimeout(r, backoff));
+                            attempt++;
+                            continue;
+                        }
+                    }
+
+                    if (!response.ok) {
+                        if (selectedTTSEngine === 'kokoro') {
                             throw new Error(`Kokoro 오류: ${response.status}`);
                         }
-                        
-                        audioBlob = await response.blob();
-                    } else {
-                        // OpenAI TTS
-                        const response = await fetch('https://api.openai.com/v1/audio/speech', {
-                            method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${openaiApiKey}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                model: 'gpt-4o-mini-tts',
-                                input: sent.text,
-                                voice: 'cedar',
-                                speed: 1.0
-                            })
-                        });
-                        
-                        if (!response.ok) {
-                            const err = await response.json().catch(() => ({}));
-                            throw new Error(err.error?.message || `API 오류: ${response.status}`);
-                        }
-                        
-                        audioBlob = await response.blob();
+                        const err = await response.json().catch(() => ({}));
+                        throw new Error(err.error?.message || `API 오류: ${response.status}`);
                     }
-                    
-                    ttsCache.set(sent.cacheKey, audioBlob);
-                    
-                    // DB에 저장
-                    const arrayBuffer = await audioBlob.arrayBuffer();
-                    await dbPut('audioCache', {
-                        id: sent.cacheKey,
-                        paperId: currentPaper.id,
-                        data: new Uint8Array(arrayBuffer)
-                    });
-                    
-                    generated++;
-                    updateAudioProgress(generated, toGenerate.length);
-                    
-                } catch (err) {
-                    console.error('TTS generation error:', err);
-                    errors++;
-                    
-                    // rate limit이면 잠시 대기
-                    if (err.message.includes('rate')) {
-                        await new Promise(r => setTimeout(r, 2000));
-                    }
+
+                    return await response.blob();
                 }
-                
-                // 약간의 딜레이 (Kokoro는 빠르게, OpenAI는 rate limit 방지)
-                const delay = selectedTTSEngine === 'kokoro' ? 50 : 100;
-                await new Promise(r => setTimeout(r, delay));
             }
+
+            let nextIndex = 0;
+            async function worker() {
+                while (true) {
+                    const i = nextIndex++;
+                    if (i >= toGenerate.length) return;
+                    const sent = toGenerate[i];
+                    try {
+                        const audioBlob = await fetchOne(sent);
+                        ttsCache.set(sent.cacheKey, audioBlob);
+
+                        const arrayBuffer = await audioBlob.arrayBuffer();
+                        await dbPut('audioCache', {
+                            id: sent.cacheKey,
+                            paperId: currentPaper.id,
+                            data: new Uint8Array(arrayBuffer)
+                        });
+
+                        generated++;
+                    } catch (err) {
+                        console.error('TTS generation error:', err);
+                        errors++;
+                    }
+                    updateAudioProgress(generated, toGenerate.length);
+                }
+            }
+
+            await Promise.all(Array.from({ length: CONCURRENCY }, () => worker()));
             
             // 완료
             audioGenerating = false;
