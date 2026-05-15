@@ -6001,6 +6001,22 @@
             }
         }
         
+        // 코드 블록 휴리스틱 — TTS 생성에서 제외할지 판단.
+        // PDF 추출 텍스트엔 명시적 마커가 없어 통계적 신호로 판정한다.
+        function isCodeLike(text) {
+            if (!text || text.length < 10) return false;
+            if (/```/.test(text)) return true;
+            const lines = text.split(/\n+/).filter(l => l.trim());
+            const avgLineLen = text.replace(/\n/g, '').length / Math.max(1, lines.length);
+            const specials = (text.match(/[{}()\[\];=<>\\\/&|^~]/g) || []).length;
+            const specialRatio = specials / text.length;
+            const hasCodeKw = /\b(def|function|class|import|from|const|let|var|return|public|private|static|void|=>|->)\b/.test(text);
+            if (lines.length >= 3 && avgLineLen < 60 && (hasCodeKw || specialRatio > 0.10)) return true;
+            if (specialRatio > 0.15) return true;
+            if ((text.match(/`/g) || []).length >= 4) return true;
+            return false;
+        }
+
         // 전체 논문 오디오 생성
         async function generateAllAudio() {
             // TTS 엔진 선택 안 했으면 먼저 선택
@@ -6023,9 +6039,16 @@
             // 모든 문장 수집 (sentences가 있으면 문장별, 없으면 splitSentences로 분리)
             const allSentences = [];
             const sections = currentPaper.sections || [];
-            
+            let skippedCodeParas = 0;
+
             for (const section of sections) {
                 for (const para of (section.paragraphs || [])) {
+                    // 코드 블록 판정된 paragraph는 TTS에서 통째로 제외
+                    if (para.text && isCodeLike(para.text)) {
+                        skippedCodeParas++;
+                        console.log('[TTS] skip code-like paragraph:', para.text.slice(0, 120));
+                        continue;
+                    }
                     // 문장 데이터가 있으면 문장별로 처리
                     if (para.sentences && para.sentences.length > 0) {
                         for (const sent of para.sentences) {
@@ -6050,6 +6073,10 @@
                         }
                     }
                 }
+            }
+
+            if (skippedCodeParas > 0) {
+                console.log(`[TTS] skipped ${skippedCodeParas} code-like paragraph(s) from audio generation`);
             }
             
             if (allSentences.length === 0) {
