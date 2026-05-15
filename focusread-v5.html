@@ -6116,8 +6116,8 @@
             let generated = 0;
             let errors = 0;
 
-            // Kokoro는 컨테이너 CPU 추론이라 동시성을 작게, OpenAI는 RPM 한도 여유가 커서 8.
-            const CONCURRENCY = selectedTTSEngine === 'kokoro' ? 3 : 8;
+            // Kokoro는 컨테이너 CPU 추론이라 동시성을 작게, OpenAI는 RPM 3000 한도 기준 약 60%.
+            const CONCURRENCY = selectedTTSEngine === 'kokoro' ? 3 : 32;
             const MAX_RETRIES = 5;
 
             async function fetchOne(sent) {
@@ -6143,7 +6143,7 @@
                                     'Content-Type': 'application/json'
                                 },
                                 body: JSON.stringify({
-                                    model: 'gpt-4o-mini-tts',
+                                    model: 'gpt-4o-mini-tts-2025-12-15',
                                     input: sent.text,
                                     voice: 'cedar',
                                     speed: 1.0
