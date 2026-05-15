@@ -271,7 +271,7 @@ def clean_title(title: str) -> str:
     E.g., "Under review as a conference paper at ICLR 2026"
     """
     import re
-    
+
     # Common patterns to remove from title
     patterns = [
         r'^Under review.*?(?:ICLR|ICML|NeurIPS|AAAI|ACL|EMNLP|CVPR|ICCV|ECCV|KDD|WWW|SIGIR|NAACL).*?\d{4}\s*',
@@ -281,12 +281,30 @@ def clean_title(title: str) -> str:
         r'^arXiv:\d+\.\d+.*?\s*',
         r'^Workshop.*?(?:ICLR|ICML|NeurIPS|AAAI).*?\d{4}\s*',
     ]
-    
+
     cleaned = title
     for pattern in patterns:
         cleaned = re.sub(pattern, '', cleaned, flags=re.IGNORECASE)
-    
+
     return cleaned.strip()
+
+
+def is_running_header_or_footer(text: str) -> bool:
+    """
+    Detect text that is a page running header/footer rather than a real section heading.
+    Book pages typically include lines like "Types of Agents | 3" or "12 | Chapter 1: Introduction to Agents".
+    These get picked up by Grobid as <head> but are not real section titles.
+    """
+    if not text:
+        return False
+    stripped = text.strip()
+    # "Title | 7" or "Title|7"
+    if re.search(r'\|\s*\d+\s*$', stripped):
+        return True
+    # "7 | Chapter 1: ..." (left-side page number)
+    if re.match(r'^\s*\d+\s*\|\s+', stripped):
+        return True
+    return False
 
 
 def parse_grobid_tei(xml_content: str) -> dict:
@@ -414,7 +432,8 @@ def flatten_to_paragraphs(parsed: dict) -> list:
     # Section paragraphs
     for section in parsed.get('sections', []):
         # Section title as a paragraph
-        if section.get('title') and section.get('title_coords'):
+        if section.get('title') and section.get('title_coords') \
+                and not is_running_header_or_footer(section['title']):
             bboxes = []
             for page, bbox_list in sorted(section['title_coords'].items()):
                 for bbox in bbox_list:
@@ -472,7 +491,20 @@ def flatten_to_paragraphs(parsed: dict) -> list:
                     'sentences': sentence_data
                 })
                 para_id += 1
-    
+
+    # Re-sort paragraphs by physical position so that floating <div>s emitted
+    # by Grobid (figure captions, page-break-split paragraphs, etc.) end up
+    # next to their neighbors in the document instead of at the very end.
+    def _position_key(p):
+        boxes = p.get('bboxes') or []
+        if not boxes:
+            return (10**9, 10**9)
+        return min((b['page'], b['y']) for b in boxes)
+
+    paragraphs.sort(key=_position_key)
+    for i, p in enumerate(paragraphs):
+        p['id'] = i
+
     return paragraphs
 
 
