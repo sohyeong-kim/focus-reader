@@ -35,8 +35,11 @@ app.add_middleware(
 
 # Docling DocItemLabel values mapped to frontend paragraph types.
 SECTION_TITLE_LABELS = {"section_header", "title"}
-# Items we never want in the audio/reader flow.
-SKIP_LABELS = {"page_header", "page_footer", "picture", "table", "document_index"}
+# Items we never want in the audio/reader flow. Code blocks join this set so
+# they're excluded from TTS generation, the sidebar list, and the PDF sentence
+# highlight overlay in one shot (instead of relying on a frontend heuristic
+# that sometimes lets code through).
+SKIP_LABELS = {"page_header", "page_footer", "picture", "table", "document_index", "code"}
 
 
 def _bbox_to_topleft(bbox, page_height):
