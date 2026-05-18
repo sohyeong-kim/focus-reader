@@ -115,6 +115,14 @@ async function ensurePythonEnv() {
   await spawnAsync(pythonBin, ['-m', 'pip', 'install', '-r', requirementsPath]);
   await spawnAsync(pythonBin, ['-m', 'spacy', 'download', 'en_core_web_sm']);
 
+  // Pre-warm Docling so the first server boot doesn't pay the
+  // Hugging Face model download cost on the critical path.
+  console.log('[setup] pre-warming Docling models...');
+  await spawnAsync(pythonBin, [
+    '-c',
+    'from docling.document_converter import DocumentConverter; DocumentConverter()',
+  ]);
+
   return pythonBin;
 }
 
@@ -230,14 +238,16 @@ app.whenReady().then(async () => {
 
   startPythonServer(pythonBin);
 
-  const ready = await waitForDocling(120000);
+  // First boot can take a few minutes if Docling still has to download
+  // its Hugging Face weights — give it 10 min before warning the user.
+  const ready = await waitForDocling(600000);
   if (!ready) {
     await dialog.showMessageBox({
       type: 'warning',
       title: 'Docling did not start',
       message: 'The local Docling server failed to come up on port 8000.',
       detail:
-        'Check the Electron console log, or run `docker compose up -d docling kokoro` as a fallback.',
+        'It may still be loading models in the background. Wait a minute and try opening a PDF; if it still fails, check the Electron console log or run `docker compose up -d docling kokoro` as a fallback.',
     });
   }
 
