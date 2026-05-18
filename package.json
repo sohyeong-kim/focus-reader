@@ -36,8 +36,12 @@
     ],
     "extraResources": [
       {
-        "from": "server_grobid_v2.py",
-        "to": "server_grobid_v2.py"
+        "from": "server_docling.py",
+        "to": "server_docling.py"
+      },
+      {
+        "from": "requirements.txt",
+        "to": "requirements.txt"
       }
     ],
     "mac": {

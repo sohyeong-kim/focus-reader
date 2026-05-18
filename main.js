@@ -1,11 +1,11 @@
 const { app, BrowserWindow, dialog } = require('electron');
 const path = require('path');
-const { spawn } = require('child_process');
+const fs = require('fs');
+const { spawn, execSync } = require('child_process');
 
 let mainWindow;
 let serverProcess;
 
-// Check if running in development
 const isDev = !app.isPackaged;
 
 function createWindow() {
@@ -18,94 +18,132 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
     },
-    backgroundColor: '#1e1e2e'
+    backgroundColor: '#1e1e2e',
   });
 
-  // Load the HTML file
   mainWindow.loadFile('focusread-v5.html');
-
-  // DevTools는 기본적으로 끄기 (필요하면 Cmd+Option+I로 열기)
-  // if (isDev) {
-  //   mainWindow.webContents.openDevTools();
-  // }
 
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 }
 
-function startPythonServer() {
-  const serverPath = isDev
-    ? path.join(__dirname, 'server_grobid_v2.py')
-    : path.join(process.resourcesPath, 'server_grobid_v2.py');
+// ---------------- host-python helpers ----------------
 
-  console.log('Starting Python server from:', serverPath);
-
-  // Try multiple python paths
-  const pythonPaths = [
+// Need 3.10+ for current Docling.
+function findSystemPython() {
+  const candidates = [
     '/opt/miniconda3/bin/python3',
     '/opt/homebrew/bin/python3',
     '/usr/local/bin/python3',
     '/usr/bin/python3',
-    'python3'
+    'python3',
   ];
-
-  let pythonPath = 'python3';
-  for (const p of pythonPaths) {
+  for (const p of candidates) {
     try {
-      require('child_process').execSync(`${p} --version`, { stdio: 'ignore' });
-      pythonPath = p;
-      break;
+      const out = execSync(
+        `${p} -c "import sys; print(sys.version_info >= (3,10))"`,
+        { encoding: 'utf8' }
+      );
+      if (out.trim() === 'True') return p;
     } catch (e) {
-      // try next
+      // skip and try the next candidate
     }
   }
+  return null;
+}
 
-  console.log('Using Python:', pythonPath);
+function venvPython(venvDir) {
+  return process.platform === 'win32'
+    ? path.join(venvDir, 'Scripts', 'python.exe')
+    : path.join(venvDir, 'bin', 'python');
+}
 
-  serverProcess = spawn(pythonPath, [serverPath], {
-    stdio: ['pipe', 'pipe', 'pipe'],
-    env: { ...process.env, PATH: '/opt/miniconda3/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:' + (process.env.PATH || '') }
+function resourcePath(name) {
+  return isDev
+    ? path.join(__dirname, name)
+    : path.join(process.resourcesPath, name);
+}
+
+function spawnAsync(cmd, args, opts = {}) {
+  return new Promise((resolve, reject) => {
+    const p = spawn(cmd, args, { stdio: 'inherit', ...opts });
+    p.on('close', (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`${cmd} ${args.join(' ')} exited ${code}`));
+    });
+    p.on('error', reject);
   });
+}
 
-  serverProcess.stdout.on('data', (data) => {
-    console.log(`Server: ${data}`);
-  });
+async function ensurePythonEnv() {
+  const venvDir = path.join(app.getPath('userData'), 'venv');
+  const pythonBin = venvPython(venvDir);
 
-  serverProcess.stderr.on('data', (data) => {
-    console.error(`Server Error: ${data}`);
-  });
+  if (fs.existsSync(pythonBin)) {
+    return pythonBin;
+  }
 
-  serverProcess.on('close', (code) => {
-    console.log(`Server process exited with code ${code}`);
-  });
-
-  serverProcess.on('error', (err) => {
-    console.error('Failed to start server:', err);
-    dialog.showErrorBox(
-      'Server Error',
-      'Failed to start Python server. Make sure Python 3 and required packages are installed.\n\n' +
-      'Required: pip install fastapi uvicorn httpx spacy\n' +
-      'And: python -m spacy download en_core_web_sm'
+  const systemPython = findSystemPython();
+  if (!systemPython) {
+    throw new Error(
+      'Python 3.10+ was not found on this system. Install it (e.g. `brew install python@3.11`) and relaunch.'
     );
-  });
+  }
+
+  console.log('[setup] creating venv at', venvDir, 'using', systemPython);
+  await spawnAsync(systemPython, ['-m', 'venv', venvDir]);
+
+  const requirementsPath = resourcePath('requirements.txt');
+  console.log('[setup] installing requirements from', requirementsPath);
+  await spawnAsync(pythonBin, ['-m', 'pip', 'install', '--upgrade', 'pip']);
+  await spawnAsync(pythonBin, ['-m', 'pip', 'install', '-r', requirementsPath]);
+  await spawnAsync(pythonBin, ['-m', 'spacy', 'download', 'en_core_web_sm']);
+
+  return pythonBin;
+}
+
+function startPythonServer(pythonBin) {
+  const serverPath = resourcePath('server_docling.py');
+  console.log('[server] starting Docling server:', serverPath);
+
+  const serverDir = path.dirname(serverPath);
+  serverProcess = spawn(
+    pythonBin,
+    ['-u', '-m', 'uvicorn', 'server_docling:app', '--host', '127.0.0.1', '--port', '8000'],
+    {
+      cwd: serverDir,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: {
+        ...process.env,
+        PYTHONPATH: serverDir + (process.env.PYTHONPATH ? `:${process.env.PYTHONPATH}` : ''),
+      },
+    }
+  );
+
+  serverProcess.stdout.on('data', (d) => console.log(`[server] ${d}`));
+  serverProcess.stderr.on('data', (d) => console.error(`[server] ${d}`));
+  serverProcess.on('close', (code) =>
+    console.log(`[server] process exited with code ${code}`)
+  );
+  serverProcess.on('error', (err) =>
+    console.error('[server] failed to start:', err)
+  );
 }
 
 function stopPythonServer() {
   if (serverProcess) {
-    console.log('Stopping Python server...');
     serverProcess.kill('SIGTERM');
     serverProcess = null;
   }
 }
 
-// Check Docling parser status (replaces previous Grobid check)
 async function checkDocling() {
   try {
     const http = require('http');
-    return new Promise((resolve) => {
+    return await new Promise((resolve) => {
       const req = http.get('http://localhost:8000/health', (res) => {
         resolve(res.statusCode === 200);
       });
@@ -120,32 +158,79 @@ async function checkDocling() {
   }
 }
 
-app.whenReady().then(async () => {
-  const doclingRunning = await checkDocling();
-  if (!doclingRunning) {
-    const result = await dialog.showMessageBox({
-      type: 'warning',
-      title: 'Docling Server Not Running',
-      message: 'PDF parser (Docling) is not running on port 8000.',
-      detail: 'To use PDF parsing features, start the backend with Docker:\n\n' +
-              'docker compose up -d docling kokoro\n\n' +
-              'Click "Continue" to open the app anyway (PDF parsing won\'t work).',
-      buttons: ['Continue', 'Quit'],
-      defaultId: 0
-    });
+async function waitForDocling(timeoutMs = 120000) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (await checkDocling()) return true;
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  return false;
+}
 
-    if (result.response === 1) {
+// ---------------- app lifecycle ----------------
+
+app.whenReady().then(async () => {
+  // If Docling is already reachable (e.g. user is running docker compose), just use it.
+  if (await checkDocling()) {
+    console.log('[startup] Docling already reachable on :8000, skipping host setup');
+    createWindow();
+    app.on('activate', () => {
+      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    });
+    return;
+  }
+
+  const venvDir = path.join(app.getPath('userData'), 'venv');
+  const venvExists = fs.existsSync(venvPython(venvDir));
+
+  if (!venvExists) {
+    const choice = await dialog.showMessageBox({
+      type: 'info',
+      title: 'First-time setup',
+      message: 'Focus Reader needs to install its Python dependencies.',
+      detail:
+        'This one-time setup downloads ~1 GB of model files and can take 5–10 minutes.\n\nThe main window will open once setup completes.',
+      buttons: ['Install', 'Quit'],
+      defaultId: 0,
+      cancelId: 1,
+    });
+    if (choice.response === 1) {
       app.quit();
       return;
     }
   }
 
-  createWindow();
+  let pythonBin;
+  try {
+    pythonBin = await ensurePythonEnv();
+  } catch (err) {
+    await dialog.showMessageBox({
+      type: 'error',
+      title: 'Setup failed',
+      message: String(err.message || err),
+      detail:
+        'You can also run the backend in Docker as a fallback:\n  docker compose up -d docling kokoro',
+    });
+    app.quit();
+    return;
+  }
 
+  startPythonServer(pythonBin);
+
+  const ready = await waitForDocling(120000);
+  if (!ready) {
+    await dialog.showMessageBox({
+      type: 'warning',
+      title: 'Docling did not start',
+      message: 'The local Docling server failed to come up on port 8000.',
+      detail:
+        'Check the Electron console log, or run `docker compose up -d docling kokoro` as a fallback.',
+    });
+  }
+
+  createWindow();
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
 
