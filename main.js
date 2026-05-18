@@ -32,9 +32,22 @@ function createWindow() {
 
 // ---------------- host-python helpers ----------------
 
-// Need 3.10+ for current Docling.
+// Need 3.10+ for current Docling. macOS ships /usr/bin/python3 at 3.9.x, so
+// version-suffixed binaries and Homebrew paths come first.
 function findSystemPython() {
   const candidates = [
+    '/opt/homebrew/bin/python3.13',
+    '/opt/homebrew/bin/python3.12',
+    '/opt/homebrew/bin/python3.11',
+    '/opt/homebrew/bin/python3.10',
+    '/usr/local/bin/python3.13',
+    '/usr/local/bin/python3.12',
+    '/usr/local/bin/python3.11',
+    '/usr/local/bin/python3.10',
+    'python3.13',
+    'python3.12',
+    'python3.11',
+    'python3.10',
     '/opt/miniconda3/bin/python3',
     '/opt/homebrew/bin/python3',
     '/usr/local/bin/python3',
